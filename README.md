@@ -31,7 +31,7 @@ This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-08-18 12:30:52 AWST"
+#> [1] "2025-08-18 12:55:12 AWST"
 ```
 
 Here are the tests results and package coverage:
@@ -42,7 +42,7 @@ devtools::check(quiet = TRUE)
 #> ℹ Installed roxygen2 version (7.3.2) doesn't match required (7.1.1)
 #> ✖ `check()` will not re-document this package
 #> ── R CMD check results ─────────────────────────── ravingBrowser 0.0.0.9000 ────
-#> Duration: 14.6s
+#> Duration: 14.2s
 #> 
 #> ❯ checking package subdirectories ... NOTE
 #>   Problems with news in ‘NEWS.md’:

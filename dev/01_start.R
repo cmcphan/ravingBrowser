@@ -66,7 +66,7 @@ usethis::use_git()
 ## Sets the remote associated with 'name' to 'url'
 usethis::use_git_remote(
   name = "origin",
-  url = "https://github.com/cmcphan/ravingBrowser.git"
+  url = "git@github.com:cmcphan/ravingBrowser.git"
 )
 
 # You're now set! ----
