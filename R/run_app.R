@@ -8,8 +8,12 @@
 #' @importFrom shiny shinyApp
 #' @importFrom golem with_golem_options
 run_app <- function(
-  onStart = NULL,
-  options = list(),
+  onStart = function(){ 
+  				library(shiny)
+  				library(shinyjs)
+  	      utils_read_data()
+  	    },
+  options = list(launch.browser=FALSE),
   enableBookmarking = NULL,
   uiPattern = "/",
   ...
