@@ -3,12 +3,15 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom shinyjs useShinyjs
+#' @importFrom shinyFeedback useShinyFeedback
 #' @noRd
 app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
-    useShinyjs(),
+    shinyjs::useShinyjs(),
+    shinyFeedback::useShinyFeedback(),
     # UI logic
     fluidPage(
       sidebarLayout(
