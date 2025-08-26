@@ -7,6 +7,7 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinyjs disabled toggleState
+#' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -60,6 +61,9 @@ mod_necessary_setup_ui <- function(id) {
 mod_necessary_setup_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+    # Keep track of max bound of currently selected chromosome
+    current_max = reactive({ browser_data$hic_info[input$region_chr, 'length'] })
+    
     observeEvent(input$toggle_region_size, {
       shinyjs::toggleState(id='region_size_slider')
       shinyjs::toggleState(id='region_size_direct_min')
@@ -70,34 +74,82 @@ mod_necessary_setup_server <- function(id){
       		# Copy currently selected values onto the other input method
       		updateNumericInput(session, 'region_size_direct_min', value=input$region_size_slider[1])
       		updateNumericInput(session, 'region_size_direct_max', value=input$region_size_slider[2])
+      		shinyFeedback::hideFeedback('region_size_slider', session)
       }
       else{
+      		copied_value = c(input$region_size_direct_min, input$region_size_direct_max)
+      		# This check is not strictly necessary but prevents a warning message being printed
+      		if(is.na(copied_value[1])){ copied_value[1]=1 }
+      		if(is.na(copied_value[2])){ copied_value[2]=current_max() }
       		updateSliderInput(session, 'region_size_slider', 
-      			value=c(input$region_size_direct_min, input$region_size_direct_max))
+      			value=copied_value)
+      		shinyFeedback::hideFeedback('region_size_direct_min', session)
+    			shinyFeedback::hideFeedback('region_size_direct_max', session)
       }
     })
+    
     observeEvent(input$region_chr, {
-    		updated_max = browser_data$hic_info[input$region_chr, 'length']
+  			updated_max = current_max()
     		updateSliderInput(session, 'region_size_slider', max=updated_max, value=c(1, updated_max))
     		updateNumericInput(session, 'region_size_direct_min', max=updated_max-1, value=1)
     		updateNumericInput(session, 'region_size_direct_max', max=updated_max, value=updated_max)
     })
     
-    # Error checking for direct inputs
-    observeEvent(input$region_size_direct_min, {
-    		current_max = browser_data$hic_info[input$region_chr, 'length']
-    		if(input$region_size_direct_min >= input$region_size_direct_max){
-    			# Warn the user and disable plot painting
+    # Validate slider
+    observeEvent(input$region_size_slider, {
+    		value = input$region_size_slider
+    		if(value[2]-value[1] < 5000){
+    			shinyFeedback::showFeedbackDanger('region_size_slider', session=session,
+    				text='Region must be at least 5000bp long')
+    			# DISABLE PLOT PAINTING
     		}
-    		# Invalid inputs, e.g. non numeric strings, get returned as NULL
-    		if(is.null(input$region_size_direct_min)){
-    			# Warn the user and disable plot painting
-    		}
-    		# Values beyond the allowable ranges can be directly input and be returned, so need to check
-    		if(input$region_size_direct_min < 1 | input$region_size_direct_min > current_max-1){
-    			# Warn the user and disable plot painting
-    		}
+    		else{ shinyFeedback::hideFeedback('region_size_slider', session) }
     })
+    
+    # Validate direct numeric inputs
+    observeEvent({input$region_size_direct_min | input$region_size_direct_max}, {
+    		shinyFeedback::hideFeedback('region_size_direct_min', session)
+    		shinyFeedback::hideFeedback('region_size_direct_max', session)
+    		
+    		min = input$region_size_direct_min
+    		max = input$region_size_direct_max
+    		# Need to check that opposing bound is not NA first, otherwise the comparisons break
+    		if(is.na(min)){
+		  		shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session, 
+					text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
+				## DISABLE PLOT PAINTING
+		  	}
+		  	else if(is.na(max)){
+		  		shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
+					text=paste0('Invalid input: must be a number between 2 and ', current_max()))
+				## DISABLE PLOT PAINTING
+		  	}
+		  	else if(max <= min){
+				shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
+						text='Maximum must be greater than minimum')
+					## DISABLE PLOT PAINTING
+		  	}
+		  	else if(max-min < 5000){
+		  		shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session,
+		  			text='Region must be at least 5000bp long')
+		  		shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session,
+		  			text='Region must be at least 5000bp long')
+		  	}
+	  		#	Invalid inputs, e.g. non numeric strings, get returned as NA
+			#	Values beyond the allowable ranges can be directly input and be returned, so need to check
+			#	Both should be treated as invalid
+			if(is.na(min) | min < 1 | min > current_max()-1){
+					shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session, 
+						text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
+					## DISABLE PLOT PAINTING
+			}
+		  	if(is.na(max) | max < 2 | max > current_max()){
+					shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
+						text=paste0('Invalid input: must be a number between 2 and ', current_max()))
+					## DISABLE PLOT PAINTING
+			}
+    })
+    
     return(
     		reactive({
 		  		inputs = list(plot_types = input$plot_type_select,
