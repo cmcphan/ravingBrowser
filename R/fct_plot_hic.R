@@ -15,6 +15,9 @@
 #'  surrounding areas.
 #' @return A HiC contact matrix in the specified format showing interactions within the specified region, as a 
 #'  ggplot2 object
+#'
+#' importFrom strawr straw
+#' import ggplot2
 plot_hic <- function(chr, start, end, resolution, normalization='KR', format='triangular'){
     if(format == 'square'){
         strawr_query = paste(chr,start,end, sep=':')

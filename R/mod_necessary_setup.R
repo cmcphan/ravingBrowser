@@ -101,7 +101,6 @@ mod_necessary_setup_server <- function(id){
     		if(value[2]-value[1] < 5000){
     			shinyFeedback::showFeedbackDanger('region_size_slider', session=session,
     				text='Region must be at least 5000bp long')
-    			# DISABLE PLOT PAINTING
     		}
     		else{ shinyFeedback::hideFeedback('region_size_slider', session) }
     })
@@ -117,23 +116,14 @@ mod_necessary_setup_server <- function(id){
     		if(is.na(min)){
 		  		shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session, 
 					text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
-				## DISABLE PLOT PAINTING
 		  	}
 		  	else if(is.na(max)){
 		  		shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
 					text=paste0('Invalid input: must be a number between 2 and ', current_max()))
-				## DISABLE PLOT PAINTING
 		  	}
 		  	else if(max <= min){
 				shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
 						text='Maximum must be greater than minimum')
-					## DISABLE PLOT PAINTING
-		  	}
-		  	else if(max-min < 5000){
-		  		shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session,
-		  			text='Region must be at least 5000bp long')
-		  		shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session,
-		  			text='Region must be at least 5000bp long')
 		  	}
 	  		#	Invalid inputs, e.g. non numeric strings, get returned as NA
 			#	Values beyond the allowable ranges can be directly input and be returned, so need to check
@@ -141,18 +131,17 @@ mod_necessary_setup_server <- function(id){
 			if(is.na(min) | min < 1 | min > current_max()-1){
 					shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session, 
 						text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
-					## DISABLE PLOT PAINTING
 			}
 		  	if(is.na(max) | max < 2 | max > current_max()){
 					shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session, 
 						text=paste0('Invalid input: must be a number between 2 and ', current_max()))
-					## DISABLE PLOT PAINTING
 			}
     })
     
     return(
     		reactive({
-		  		inputs = list(plot_types = input$plot_type_select,
+		  		inputs = list(
+		  			plot_types = input$plot_type_select,
 					region_chr = input$region_chr,
 					region_size_slider = input$region_size_slider,
 					toggle_region_size = input$toggle_region_size,

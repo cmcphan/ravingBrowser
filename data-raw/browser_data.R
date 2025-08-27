@@ -1,11 +1,10 @@
 #' Prepare necessary data for browser operations
 #'
 #' @description Script to prepare browser data for use in the app. Builds a BrowserData R6
-#'   object and initializes it for global use in the app.
+#'   object and initializes it for global use in the app. Does not need to be explicitly run by the user.
 #'
 #' @seealso [BrowserData()] for the R6 class definition
 #' @importFrom usethis use_data
-## code to prepare `browser_data` dataset goes here
 hic_path = 'data-raw/Capture_merged_new.allValidPairs.hic'
 tads_path = 'data-raw/dummy/tads_1_domains.bed'
 loops_path = 'data-raw/dummy/loops_default.bedGraph'

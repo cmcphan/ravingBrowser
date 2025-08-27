@@ -19,23 +19,13 @@ app_ui <- function(request) {
           width=3,
           tags$h1('RAVING Browser'),
           tags$h2('What are you interested in visualizing?'),
-          mod_necessary_setup_ui("necessary_setup_1")
+          mod_necessary_setup_ui("necessary_setup_1"),
+          uiOutput('plot_controls')
         ),
         mainPanel(
 		      width=9, 
-		      tags$h1('Choices made'),
-		      tags$h2('Plot types:'),
-		      textOutput(outputId = 'plot_types'),
-		      tags$h2('Chromosome:'),
-		      textOutput(outputId = 'region_chr'),
-		      tags$h2('Region limits slider:'),
-		      textOutput(outputId = 'region_size_slider'),
-		      tags$h2('Region limits direct input MIN:'),
-		      textOutput(outputId = 'region_size_direct_min'),
-		      tags$h2('Region limits direct input MAX:'),
-		      textOutput(outputId = 'region_size_direct_max'),
-		      tags$h2('Switch button presses:'),
-		      textOutput(outputId = 'toggle_region_size')
+		      #mod_plot_hic_ui("plot_hic_1")
+		      verbatimTextOutput('plot_pane')
 		    )
       )
     )

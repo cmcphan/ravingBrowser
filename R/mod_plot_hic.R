@@ -10,7 +10,8 @@
 mod_plot_hic_ui <- function(id) {
   ns <- NS(id)
   tagList(
- 
+ 		plotOutput('hic_plot')
+		# Can add a brushOpts() object to the plotOutput function here to enable brushing
   )
 }
     
@@ -20,7 +21,7 @@ mod_plot_hic_ui <- function(id) {
 mod_plot_hic_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
- 
+ 		
   })
 }
     
