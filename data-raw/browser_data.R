@@ -6,12 +6,12 @@
 #'
 #' @seealso [BrowserData()] for the R6 class definition
 #' @importFrom usethis use_data
-hic_path = 'data-raw/3Libs_merged.allValidPairs.hic'
-tads_path = 'data-raw/dummy/tads_1_domains.bed'
-loops_path = 'data-raw/dummy/loops_default.bedGraph'
-pca_path = 'data-raw/dummy/25kb_pca1.bedGraph'
-chip_paths = c('data-raw/38F_ChIP_H2Bk20ac.bigWig',
-	'data-raw/38F_ChIP_H3k4me3.bigWig')
+hic_path = '/home/cmcphan/Documents/ravenscroft/processing/capture/Capture_merged_new.allValidPairs.hic'
+tads_path = '/home/cmcphan/Documents/ravenscroft/processing/capture/tads/tads_1_domains.bed'
+loops_path = '/home/cmcphan/Documents/ravenscroft/processing/capture/loops/loops_default.bedGraph'
+pca_path = '/home/cmcphan/Documents/ravenscroft/processing/capture/pca/25kb_pca1.bedGraph'
+chip_paths = c('/home/cmcphan/Documents/ravenscroft/processing/chip-seq/38F_ChIP_H2Bk20ac.bigWig',
+	'/home/cmcphan/Documents/ravenscroft/processing/chip-seq/38F_ChIP_H3k4me3.bigWig')
 browser_data = BrowserData$new(hic_path, tads_path, loops_path, pca_path, chip_paths)
 
 usethis::use_data(browser_data, overwrite = TRUE)
