@@ -1,17 +1,18 @@
 #' Utility functions for bigWig visualization
 #'
-#' @description These functions have been extracted from the larger `trackplot` codebase and modified for use 
-#'  in the ravingBrowser app. They perform the backend work involved in efficiently extracting required data
-#'  from bigWig files.
+#' @description These functions have been extracted from the larger `trackplot`
+#'  codebase and modified for use in the ravingBrowser app. They perform the
+#'  backend work involved in efficiently extracting required data from bigWig files.
 #'
 #' @seealso Source code: https://github.com/PoisonAlien/trackplot
 #' 
 #' @noRd
 
-#' @description Read bigWig file column data, forms a necessary input for get_summaries()
+#' @description Read bigWig file column data, forms a necessary input for
+#'  get_summaries()
 #' 
-#' @param bws Path(s) to bigWig file(s). If multiple files are to be read, paths should be provided as a 
-#' 	character vector
+#' @param bws Path(s) to bigWig file(s). If multiple files are to be read, paths
+#'  should be provided as a character vector
 #' @param sample_names 
 read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38", input_type = "bw"){
   

@@ -1,26 +1,28 @@
 #' R6 object for storing backend browser data
 #'
-#' @description Class describing an R6 object capable of storing all necessary static data
-#'   required for sharing among ravingBrowser modules, e.g. data frames for plot construction and 
-#'   back end metadata
+#' @description Class describing an R6 object capable of storing all necessary
+#'  static data required for sharing among ravingBrowser modules, e.g. data
+#'  frames for plot construction and back end metadata
 #'
-#' @field hic_chrs Vector of strings enumerating the available chromosomes in the loaded HiC file
-#' @field hic_info Data frame containing basic metadata about loaded HiC file. Has columns index (a double
-#' 		serving as a numerical ID), name (string describing the name of the chromosome), length (double describing
-#' 		the length of the chromosome in base pairs
-#' @field resolutions Vector of strings enumerating the available resolutions in the loaded HiC file
-#' @field normalizations Vector of strings enumerating the available normalization methods in the loaded HiC file
-#' @field default_chr String describing the 'default' chromosome to be used when initializing UI elements - the
-#' 		first listed chromosome in hic_info
-#' @field default_chr_length Double enumerating the length in base pairs of the default chromosome
-#' @field tads Data frame containing data for topologically associated domains (TADs) matching to the loaded 
-#' 		HiC file
-#' @field loops Data frame containing data for loops matching to the loaded HiC file
-#' @field pca Data frame containing data for A/B compartmentalization scores (i.e. PCA scores) matching to the 
-#' 		loaded HiC file
-#' @field bw Bigwig file information used internally by [get_summaries()] 
-#' @field hg19data Data frame containing a variety of information about gene features from various sources.
-#'	 		Produced by [genekitr::genInfo()]
+#' @field hic_path String representing the file path to the .hic file
+#' @field hic_chrs Vector of strings enumerating the available chromosomes in the
+#'  loaded HiC file
+#' @field hic_info Data frame containing basic metadata about loaded HiC file. Has
+#'  columns index (a double serving as a numerical ID), name (string describing
+#'  the name of the chromosome), length (double describing the length of the
+#'  chromosome in base pairs
+#' @field resolutions,normalizations Vector of strings enumerating the available
+#'  resolutions and normalization methods in the loaded HiC file
+#' @field default_chr String describing the 'default' chromosome to be used when
+#'  initializing UI elements - set as the first listed chromosome in hic_info
+#' @field default_chr_length Double enumerating the length in base pairs of the
+#'  default chromosome
+#' @field tads,loops,pca Data frames containing data for topologically associated
+#'  domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+#'  scores) matching to the loaded HiC file
+#' @field bw Bigwig file information used internally by [get_summaries()]
+#' @field hg19data Data frame containing a variety of information about gene features
+#'  from various sources. Produced by [genekitr::genInfo()]
 #' 
 #' @importFrom R6 R6Class
 #' @import strawr
@@ -29,6 +31,7 @@
 BrowserData <- R6::R6Class(
 	'BrowserData',
 	public = list(
+		hic_path = NULL,
 		hic_chrs = NULL,
 		hic_info = NULL,
 		resolutions = NULL,
@@ -50,6 +53,7 @@ BrowserData <- R6::R6Class(
 		initialize = function(hic_path=NULL, tads_path=NULL, loops_path=NULL, 
 									pca_path=NULL, chip_paths=NULL){
 				if(!is.null(hic_path)){
+					self$hic_path = hic_path
 					self$hic_chrs = strawr::readHicChroms(hic_path)
 					hic_info = sort_by.data.frame(self$hic_chrs, self$hic_chrs$index)
 					rownames(hic_info) = hic_info$name

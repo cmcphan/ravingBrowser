@@ -5,6 +5,8 @@
 #'  to populate the rest of the sidebar with
 #' @param id,input,output,session Internal parameters for `{shiny}`.
 #'
+#' @noRd
+#'
 #' @importFrom shiny NS tagList
 #' @importFrom shinyjs disabled toggleState
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
@@ -98,11 +100,13 @@ mod_necessary_setup_server <- function(id){
     # Validate slider
     observeEvent(input$region_size_slider, {
     		value = input$region_size_slider
-    		if(value[2]-value[1] < 5000){
+    		if(value[2] == value[1]){
     			shinyFeedback::showFeedbackDanger('region_size_slider', session=session,
-    				text='Region must be at least 5000bp long')
+    				text='Region cannot be 0 base pairs long')
     		}
-    		else{ shinyFeedback::hideFeedback('region_size_slider', session) }
+    		else{ 
+    			shinyFeedback::hideFeedback('region_size_slider', session) 
+    		}
     })
     
     # Validate direct numeric inputs
@@ -137,19 +141,15 @@ mod_necessary_setup_server <- function(id){
 						text=paste0('Invalid input: must be a number between 2 and ', current_max()))
 			}
     })
-    
-    return(
-    		reactive({
-		  		inputs = list(
-		  			plot_types = input$plot_type_select,
-					region_chr = input$region_chr,
-					region_size_slider = input$region_size_slider,
-					toggle_region_size = input$toggle_region_size,
-					region_size_direct_min = input$region_size_direct_min,
-					region_size_direct_max = input$region_size_direct_max
-				)
-    		})
-    	)
+    inputs = list(
+      plot_type_select = reactive({ input$plot_type_select }),
+      region_chr = reactive({ input$region_chr }),
+      toggle_region_size = reactive({ input$toggle_region_size }),
+      region_size_slider = reactive({ input$region_size_slider }),
+      region_size_direct_min = reactive({ input$region_size_direct_min }),
+      region_size_direct_max = reactive({ input$region_size_direct_max })
+      )
+    return( inputs )
   })
 }
     

@@ -5,7 +5,10 @@
 \title{Run the Shiny Application}
 \usage{
 run_app(
-  onStart = options(scipen = 10),
+  onStart = function() {
+     options(scipen = 10)
+     library(ggplot2)
+ },
   options = list(launch.browser = FALSE),
   enableBookmarking = NULL,
   uiPattern = "/",

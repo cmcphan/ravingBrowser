@@ -4,9 +4,9 @@
 \alias{BrowserData}
 \title{R6 object for storing backend browser data}
 \description{
-Class describing an R6 object capable of storing all necessary static data
-required for sharing among ravingBrowser modules, e.g. data frames for plot construction and
-back end metadata
+Class describing an R6 object capable of storing all necessary
+static data required for sharing among ravingBrowser modules, e.g. data
+frames for plot construction and back end metadata
 }
 \note{
 Relative file paths should work from the root directory of the package.
@@ -14,33 +14,45 @@ Relative file paths should work from the root directory of the package.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{hic_chrs}}{Vector of strings enumerating the available chromosomes in the loaded HiC file}
+\item{\code{hic_path}}{String representing the file path to the .hic file}
 
-\item{\code{hic_info}}{Data frame containing basic metadata about loaded HiC file. Has columns index (a double
-serving as a numerical ID), name (string describing the name of the chromosome), length (double describing
-the length of the chromosome in base pairs}
-
-\item{\code{resolutions}}{Vector of strings enumerating the available resolutions in the loaded HiC file}
-
-\item{\code{normalizations}}{Vector of strings enumerating the available normalization methods in the loaded HiC file}
-
-\item{\code{default_chr}}{String describing the 'default' chromosome to be used when initializing UI elements - the
-first listed chromosome in hic_info}
-
-\item{\code{default_chr_length}}{Double enumerating the length in base pairs of the default chromosome}
-
-\item{\code{tads}}{Data frame containing data for topologically associated domains (TADs) matching to the loaded
-HiC file}
-
-\item{\code{loops}}{Data frame containing data for loops matching to the loaded HiC file}
-
-\item{\code{pca}}{Data frame containing data for A/B compartmentalization scores (i.e. PCA scores) matching to the
+\item{\code{hic_chrs}}{Vector of strings enumerating the available chromosomes in the
 loaded HiC file}
+
+\item{\code{hic_info}}{Data frame containing basic metadata about loaded HiC file. Has
+columns index (a double serving as a numerical ID), name (string describing
+the name of the chromosome), length (double describing the length of the
+chromosome in base pairs}
+
+\item{\code{resolutions, normalizations}}{Vector of strings enumerating the available
+resolutions and normalization methods in the loaded HiC file}
+
+\item{\code{default_chr}}{String describing the 'default' chromosome to be used when
+initializing UI elements - set as the first listed chromosome in hic_info}
+
+\item{\code{default_chr_length}}{Double enumerating the length in base pairs of the
+default chromosome}
+
+\item{\code{tads, loops, pca}}{Data frames containing data for topologically associated
+domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+scores) matching to the loaded HiC file}
 
 \item{\code{bw}}{Bigwig file information used internally by \code{\link[=get_summaries]{get_summaries()}}}
 
-\item{\code{hg19data}}{Data frame containing a variety of information about gene features from various sources.
-Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
+\item{\code{hg19data}}{Data frame containing a variety of information about gene features
+from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{resolutions, normalizations}}{Vector of strings enumerating the available
+resolutions and normalization methods in the loaded HiC file}
+
+\item{\code{tads, loops, pca}}{Data frames containing data for topologically associated
+domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+scores) matching to the loaded HiC file}
 }
 \if{html}{\out{</div>}}
 }

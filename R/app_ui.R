@@ -17,15 +17,14 @@ app_ui <- function(request) {
       sidebarLayout(
         sidebarPanel(
           width=3,
-          tags$h1('RAVING Browser'),
-          tags$h2('What are you interested in visualizing?'),
+          tags$h1("RAVING Browser"),
+          tags$h2("What are you interested in visualizing?"),
           mod_necessary_setup_ui("necessary_setup_1"),
-          uiOutput('plot_controls')
+          uiOutput("plot_controls")
         ),
         mainPanel(
 		      width=9, 
-		      #mod_plot_hic_ui("plot_hic_1")
-		      verbatimTextOutput('plot_pane')
+		      uiOutput("plot_pane")
 		    )
       )
     )
