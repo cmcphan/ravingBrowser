@@ -2,6 +2,7 @@
 
 export(run_app)
 import(ggplot2)
+import(ggraph)
 import(shiny)
 import(strawr)
 importFrom(R6,R6Class)
@@ -31,3 +32,4 @@ importFrom(shinyjs,disable)
 importFrom(shinyjs,disabled)
 importFrom(shinyjs,toggleState)
 importFrom(shinyjs,useShinyjs)
+importFrom(tidygraph,tbl_graph)

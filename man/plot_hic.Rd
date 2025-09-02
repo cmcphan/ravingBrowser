@@ -34,12 +34,13 @@ or 'rectangular', which plots the upper triangle but with additional data
 points filled in from surrounding areas.}
 }
 \value{
-A HiC contact matrix in the specified format showing interactions within the
-specified region, as a ggplot2 object
+A HiC contact matrix in the specified format showing interactions within
+the specified region, as a ggplot2 object
 
 import ggplot2
 importFrom strawr straw
 }
 \description{
-Generate a HiC contact matrix built in ggplot2 in either square, triangular or rectangular format.
+Generate a HiC contact matrix built in ggplot2 in either square,
+triangular or rectangular format.
 }

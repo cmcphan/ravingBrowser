@@ -7,6 +7,7 @@
 app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
 	plot_types = basic_config$plot_type_select
+	hic_config = mod_configure_hic_server("configure_hic_1")
 	# Build dynamic UI
 	observeEvent(plot_types(), {
 		output$plot_controls = renderUI({
@@ -34,10 +35,11 @@ app_server <- function(input, output, session) {
 			}
 			return(output)
 		})
+
 		output$plot_pane = renderUI({
 			output = tagList()
 			if('Hi-C' %in% plot_types()){
-				output = c(output, mod_plot_hic_ui("plot_hic_1"))
+				output = c(output, mod_plot_hic_ui("plot_hic_1", hic_config$elements()))
 			}
 			#if('Gene Features' %in% plot_types){
 			#	output = c(output, mod_plot_genes_ui("plot_genes_1"))
@@ -58,7 +60,6 @@ app_server <- function(input, output, session) {
 		})
   }, ignoreNULL=FALSE )
   
-  hic_config = mod_configure_hic_server("configure_hic_1")
   observeEvent(hic_config$draw_plot() ,{
 		# Build region config list - check which region bounds to use
 		region_config = list(

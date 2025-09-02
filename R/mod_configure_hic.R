@@ -9,6 +9,7 @@
 #'
 #' @importFrom shiny NS tagList tags checkboxGroupInput selectInput actionButton
 #' @importFrom shinyjs disable
+#' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_configure_hic_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -56,6 +57,16 @@ mod_configure_hic_ui <- function(id) {
 mod_configure_hic_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+    # This check should not be necessary, but just in case a user manages to break
+    #  the UI somehow, it's handled
+    observeEvent(input$draw_plot, {
+      message = validate_hic(input$plot_resolution, input$plot_normalization,
+        input$plot_format)
+      if(!is.na(message)){
+        shinyFeedback::showFeedbackDanger('draw_plot', session, text=message)
+      }
+      else{ shinyFeedback::hideFeedback('draw_plot', session)}
+    })
  		return( 
       list(
         elements = reactive({ input$plot_elements }),
