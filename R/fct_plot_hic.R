@@ -38,7 +38,10 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
       ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(end, start),
         expand=FALSE) +
       ggplot2::theme(aspect.ratio=1, panel.background=ggplot2::element_blank(),
-        plot.margin=ggplot2::margin(0, 0, 0, 0))
+        plot.margin=ggplot2::margin(0, 0, 0, 0),
+        axis.title=ggplot2::element_blank(),
+        axis.ticks.y=ggplot2::element_blank(),
+        axis.text.y=ggplot2::element_blank())
   }
   else if(format == 'triangular'){
     range = end-start
@@ -54,7 +57,10 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
       ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(0, range),
         expand=FALSE) +
       ggplot2::theme(aspect.ratio=0.5, panel.background=ggplot2::element_blank(),
-        plot.margin=ggplot2::margin(0, 0, 0, 0))
+        plot.margin=ggplot2::margin(0, 0, 0, 0),
+        axis.title=ggplot2::element_blank(),
+        axis.ticks.y=ggplot2::element_blank(),
+        axis.text.y=ggplot2::element_blank())
   }
   else if(format == 'rectangular'){
       range = end-start
@@ -70,7 +76,10 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(0, range),
           expand=FALSE) +
         ggplot2::theme(aspect.ratio=0.5, panel.background=ggplot2::element_blank(),
-          plot.margin=ggplot2::margin(0, 0, 0, 0))
+          plot.margin=ggplot2::margin(0, 0, 0, 0),
+          axis.title=ggplot2::element_blank(),
+          axis.ticks.y=ggplot2::element_blank(),
+          axis.text.y=ggplot2::element_blank())
   }
   attr(plot, 'format') = format
   return(plot)
@@ -150,11 +159,10 @@ plot_loops <- function(chr, start, end){
   loop_layout = ggraph::create_layout(loop_graph, layout='linear', sort.by=bin,
     use.numeric=TRUE)
   plot = ggraph::ggraph(loop_layout) +
-    ggraph::geom_edge_arc0(ggplot2::aes(alpha=0.05/lPval), strength = -1) +
-    ggplot2::scale_y_continuous(transform='reverse') +
-    ggplot2::theme(aspect.ratio=0.1) +
+    ggraph::geom_edge_arc0(ggplot2::aes(alpha=1/lPval), strength = -1) +
     ggraph::theme_graph(plot_margin=ggplot2::margin(0, 0, 0, 0),
-      base_family='Arial') +
+      base_family='sans') +
+    ggplot2::theme(aspect.ratio=0.05) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
   return(plot)
 }
@@ -176,7 +184,8 @@ plot_pca <- function(chr, start, end){
     (pStart >= start & pEnd <= end)))
   included_pca$comp = 'A'
   included_pca$comp[included_pca$pScore < 0] = 'B'
-  abs_max = max(abs(included_pca$pScore))
+  y_max = max(included_pca$pScore)
+  y_min = min(included_pca$pScore)
 
   included_pca_A = included_pca
   included_pca_A$pScore[included_pca_A$comp == 'B'] = 0
@@ -188,9 +197,13 @@ plot_pca <- function(chr, start, end){
       data=included_pca_A) +
     ggplot2::geom_ribbon(ggplot2::aes(x=pStart, ymin=0, ymax=pScore, fill='B'),
       data=included_pca_B) +
-    ggplot2::ylim(-abs_max, abs_max) +
-    ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE) +
+    ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(y_min, y_max),
+      expand=FALSE) +
     ggplot2::theme(panel.background=ggplot2::element_blank(),
-      plot.margin=ggplot2::margin(0, 0, 0, 0))
+      plot.margin=ggplot2::margin(0, 0, 0, 0),
+      aspect.ratio=0.1,
+      axis.title=ggplot2::element_blank(),
+      axis.ticks=ggplot2::element_blank(),
+      axis.text=ggplot2::element_blank())
   return(plot)
 }

@@ -1,6 +1,6 @@
 Package: ravingBrowser
 Title: Browser interface for exploring skeletal muscle regulatory elements
-Version: 0.0.2.0
+Version: 0.0.2.1
 Authors@R: 
     person("Connor", "McPhan", , "connor.mcphan@uwa.edu.au", role = c("aut", "cre"))
 Description: A web app interface for interactively exploring regulatory

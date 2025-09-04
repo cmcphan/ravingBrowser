@@ -18,7 +18,7 @@ mod_configure_hic_ui <- function(id) {
  		checkboxGroupInput(
       inputId = ns('plot_elements'),
       label = 'Select any number of elements to plot:',
-      choices = c(TADs='tads', Loops='loops', 'A/B Compartment Scores (PCA)'='pca')
+      choices = c('TADs'='tads', 'Loops'='loops', 'A/B Compartment Scores (PCA)'='pca')
     ),
     selectInput(
       inputId = ns('plot_resolution'),
