@@ -1,7 +1,7 @@
 #' Controls for configuring gene feature plot output
 #'
-#' @description Provides a set of inputs to allow the user to configure plot parameters specific to 
-#' 	gene feature plots.
+#' @description Provides a set of inputs to allow the user to configure plot parameters
+#'  specific to gene feature plots.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'

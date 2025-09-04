@@ -1,7 +1,7 @@
 #' Controls for configuring ChIP-seq plot output
 #'
-#' @description Provides a set of inputs to allow the user to configure plot parameters specific to 
-#' 	ChIP-seq plots.
+#' @description Provides a set of inputs to allow the user to configure plot parameters
+#'  specific to ChIP-seq plots.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'
@@ -12,8 +12,16 @@ mod_configure_chip_ui <- function(id) {
   ns <- NS(id)
   tagList(
  		tags$hr(),
-  		tags$h3('ChIP-seq')
-  		# UI elements go here
+    tags$h3('ChIP-seq'),
+    checkboxGroupInput(
+      inputId = ns('chip_samples'),
+      label = 'Select any number of samples to plot:',
+      choices = browser_data$bw$bw_sample_names
+    ),
+    actionButton(
+      inputId = ns('draw_plot'),
+      label = 'Draw plot'
+    )
   )
 }
     
@@ -23,7 +31,12 @@ mod_configure_chip_ui <- function(id) {
 mod_configure_chip_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
- 
+    return(
+      list(
+        chip_samples = reactive({ input$chip_samples }),
+        draw_plot = reactive({ input$draw_plot })
+      )
+    )
   })
 }
     

@@ -13,8 +13,10 @@
 #' 
 #' @param bws Path(s) to bigWig file(s). If multiple files are to be read, paths
 #'  should be provided as a character vector
-#' @param sample_names 
-read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38", input_type = "bw"){
+#'
+#' @import data.table
+read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
+  input_type = "bw"){
   
   if(is.null(bws)){
     stop("Please provide paths to bigWig files")
@@ -31,7 +33,8 @@ read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38", input_t
   })
   
   if(is.null(sample_names)){
-    bw_sample_names = unlist(data.table::tstrsplit(x = basename(bws), split = "\\.", keep = 1))
+    bw_sample_names = unlist(data.table::tstrsplit(x = basename(bws), split = "\\.",
+      keep = 1))
   }else{
     bw_sample_names = as.character(sample_names)  
   }
@@ -55,12 +58,13 @@ read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38", input_t
 }
 
 gen_windows = function(chr = NA, start, end, window_size = 50, op_dir = getwd()){
-  
   bins = seq(from=start, to=end, by=window_size)
-  window_dat = data.table::data.table(chr=paste0('chr',chr), start=bins[-length(bins)], end=bins[-1])
+  window_dat = data.table::data.table(chr=paste0('chr',chr),
+    start=bins[-length(bins)], end=bins[-1])
   largest_bin = bins[length(bins)]
   if(largest_bin < end){
-      window_dat = rbind(window_dat, data.frame(chr=paste0('chr',chr), start=largest_bin, end=end))
+      window_dat = rbind(window_dat, data.frame(chr=paste0('chr',chr),
+        start=largest_bin, end=end))
   }
 
   op_dir = paste0(op_dir, "/")
@@ -70,7 +74,8 @@ gen_windows = function(chr = NA, start, end, window_size = 50, op_dir = getwd())
   }
   
   temp_op_bed = tempfile(pattern = "trackr", tmpdir = op_dir, fileext = ".bed")
-  data.table::fwrite(x = window_dat, file = temp_op_bed, sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+  data.table::fwrite(x = window_dat, file = temp_op_bed, sep = "\t", quote = FALSE,
+    row.names = FALSE, col.names = FALSE)
   temp_op_bed
 }
 
@@ -84,7 +89,8 @@ get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
   
   summaries = parallel::mclapply(bigWigs, FUN = function(bw){
     bn = gsub(pattern = "\\.bw$|\\.bigWig$", replacement = "", x = basename(bw))
-    cmd = paste("bwtool summary -with-sum -keep-bed -header", bedSimple, bw, paste0(op_dir, bn, ".summary"))
+    cmd = paste("bwtool summary -with-sum -keep-bed -header", bedSimple, bw,
+      paste0(op_dir, bn, ".summary"))
     system(command = cmd, intern = TRUE)
     paste0(op_dir, bn, ".summary")
   }, mc.cores = nthreads)
@@ -94,7 +100,8 @@ get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
     colnames(x)[1] = 'chromosome'
     x = x[,.(chromosome, start, end, size, max)]
     if(all(is.na(x[,max]))){
-      message("No signal! Possible cause: chromosome name mismatch between bigWigs and queried loci.")
+      message("No signal! Possible cause: chromosome name mismatch between bigWigs and
+        queried loci.")
       x[, max := 0]
     }
     x
@@ -104,6 +111,7 @@ get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
   lapply(summaries, function(x) system(command = paste0("rm ", x), intern = TRUE))
   system(command = paste0("rm ", bedSimple), intern = TRUE)
   
-  names(summary_list) = gsub(pattern = "*\\.summary$", replacement = "", x = basename(path = unlist(summaries)))
+  names(summary_list) = gsub(pattern = "*\\.summary$", replacement = "",
+    x = basename(path = unlist(summaries)))
   summary_list
 }

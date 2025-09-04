@@ -8,6 +8,8 @@ app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
 	plot_types = basic_config$plot_type_select
 	hic_config = mod_configure_hic_server("configure_hic_1")
+	chip_config = mod_configure_chip_server("configure_chip_1")
+
 	# Build dynamic UI
 	observeEvent(plot_types(), {
 		output$plot_controls = renderUI({
@@ -41,39 +43,27 @@ app_server <- function(input, output, session) {
 			if('Hi-C' %in% plot_types()){
 				output = c(output, mod_plot_hic_ui("plot_hic_1", hic_config$elements()))
 			}
-			#if('Gene Features' %in% plot_types){
+			#if('Gene Features' %in% plot_types()){
 			#	output = c(output, mod_plot_genes_ui("plot_genes_1"))
 			#}
-			#if('ChIP-seq' %in% plot_types){
-			#	output = c(output, mod_plot_chip_ui("plot_chip_1"))
-			#}
-			#if('snRNA-seq' %in% plot_types){
+			if('ChIP-seq' %in% plot_types()){
+				output = c(output, mod_plot_chip_ui("plot_chip_1"))
+			}
+			#if('snRNA-seq' %in% plot_types()){
 			#	output = c(output, mod_plot_rnaseq_ui("plot_rnaseq_1"))
 			#}
-			#if('eQTLs' %in% plot_types){
+			#if('eQTLs' %in% plot_types()){
 			#	output = c(output, mod_plot_eqtl_ui("plot_eqtl_1"))
 			#}
-			#if('FANTOM5' %in% plot_types){
+			#if('FANTOM5' %in% plot_types()){
 			#	output = c(output, mod_plot_fantom5_ui("plot_fantom5_1"))
 			#}
 			return(output)
 		})
-  }, ignoreNULL=FALSE )
+  }, ignoreNULL = FALSE )
   
-  observeEvent(hic_config$draw_plot() ,{
-		# Build region config list - check which region bounds to use
-		region_config = list(
-				plot_types = basic_config$plot_type_select(),
-				region_chr = basic_config$region_chr()
-			)
-		if(basic_config$toggle_region_size() %% 2 == 1){
-				region_config$region_start = basic_config$region_size_direct_min()
-				region_config$region_end = basic_config$region_size_direct_max()
-		}
-		else{
-				region_config$region_start = basic_config$region_size_slider()[1]
-				region_config$region_end = basic_config$region_size_slider()[2]
-		}
+  observeEvent(hic_config$draw_plot(),{
+		region_config = region_config(basic_config)
 		plot_config = list(
 			elements = hic_config$elements(),
 			resolution = hic_config$resolution(),
@@ -81,5 +71,13 @@ app_server <- function(input, output, session) {
 			format = hic_config$format()
 		)
 		mod_plot_hic_server("plot_hic_1", region_config, plot_config)
+	})
+
+	observeEvent(chip_config$draw_plot(), {
+		region_config = region_config(basic_config)
+		plot_config = list(
+			chip_samples = chip_config$chip_samples()
+		)
+		mod_plot_chip_server("plot_chip_1", region_config, plot_config)
 	})
 }

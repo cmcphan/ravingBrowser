@@ -17,6 +17,7 @@ Depends:
     R (>= 3.5)
 Imports: 
     config,
+    data.table,
     genekitr,
     golem,
     R6,

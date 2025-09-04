@@ -27,7 +27,7 @@ mod_plot_hic_ui <- function(id, elements) {
 #' @param region_config A named list of region parameters formed from user
 #'  inputs. Must include the selected chromosome, start and end coordinates
 #'  (in base pairs) of the requested region.
-#' @param plot_config A names list of plot parameters formed from user
+#' @param plot_config A named list of plot parameters formed from user
 #'  inputs. Must include the selected
 #'  resolution, normalization method and format of the requested Hi-C plot.
 #'
