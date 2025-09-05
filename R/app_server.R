@@ -12,7 +12,7 @@ app_server <- function(input, output, session) {
 
 	# Build dynamic UI
 	observeEvent(plot_types(), {
-		output$plot_controls = renderUI({
+		output$controls = renderUI({
 			output = tagList()
 			# The below could be turned into a function to make it more
 			#  scalable. Dictionary of plot type:mod name, iterate through each and
@@ -38,7 +38,7 @@ app_server <- function(input, output, session) {
 			return(output)
 		})
 
-		output$plot_pane = renderUI({
+		output$plots = renderUI({
 			output = tagList()
 			if('Hi-C' %in% plot_types()){
 				output = c(output, mod_plot_hic_ui("plot_hic_1", hic_config$elements()))
@@ -47,7 +47,7 @@ app_server <- function(input, output, session) {
 			#	output = c(output, mod_plot_genes_ui("plot_genes_1"))
 			#}
 			if('ChIP-seq' %in% plot_types()){
-				output = c(output, mod_plot_chip_ui("plot_chip_1"))
+				output = c(output, mod_plot_chip_ui("plot_chip_1", chip_config$chip_samples()))
 			}
 			#if('snRNA-seq' %in% plot_types()){
 			#	output = c(output, mod_plot_rnaseq_ui("plot_rnaseq_1"))

@@ -29,12 +29,11 @@ plot_chip <- function(chr, start, end, resolution=5000, chip_samples) {
         ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE) +
         ggplot2::labs(subtitle=bw$bw_sample_names[i]) +
         ggplot2::theme(panel.background=ggplot2::element_blank(),
-          aspect.ratio=0.1,
           plot.margin=ggplot2::margin(0, 0, 0, 0),
           axis.title=ggplot2::element_blank(),
           axis.ticks.y=ggplot2::element_blank(),
           axis.text.y=ggplot2::element_blank())
-      plots[[i]] = chip_track
+      plots[[chip_signal_names[i]]] = chip_track
     }
     return(plots)
 }

@@ -32,8 +32,6 @@ mod_plot_hic_ui <- function(id, elements) {
 #'  resolution, normalization method and format of the requested Hi-C plot.
 #'
 #' @noRd 
-#'
-#' @importFrom cowplot align_plots ggdraw
 mod_plot_hic_server <- function(id, region_config, plot_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
@@ -54,14 +52,13 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
       if('tads' %in% plot_config$elements){
         plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
       }
-      cowplot::ggdraw(plots[['hic']])
+      plots[['hic']]
     }, res=96, height=session$clientData$'output_plot_hic_1-hic_plot_width'*0.5)
 
     output$loops_track = renderPlot({
       if('loops' %in% plot_config$elements){
         plots[['loops']] = plot_loops(chr, start, end)
-        plots = cowplot::align_plots(plotlist=plots, align='v')
-        cowplot::ggdraw(plots[['loops']])
+        plots[['loops']]
       }
       else{ NULL }
     }, res=96, height=session$clientData$'output_plot_hic_1-loops_track_width'*0.1)
@@ -69,8 +66,7 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     output$pca_track = renderPlot({
       if('pca' %in% plot_config$elements){
         plots[['pca']] = plot_pca(chr, start, end)
-        plots = cowplot::align_plots(plotlist=plots, align='v')
-        cowplot::ggdraw(plots[['pca']])
+        plots[['pca']]
       }
       else{ NULL }
     }, res=96, height=session$clientData$'output_plot_hic_1-pca_track_width'*0.1)

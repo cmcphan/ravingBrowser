@@ -3,15 +3,18 @@
 #' @description Draw a ChIP track plot according to user-specified configuration.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
+#' @param chip_samples List of samples to be included.
 #'
 #' @noRd
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_chip_ui <- function(id) {
+mod_plot_chip_ui <- function(id, chip_samples) {
   ns <- NS(id)
-  tagList(
-    plotOutput(ns('chip_track'), height='auto')
-  )
+  output = tagList()
+  for(s in chip_samples){
+    output = c(output, tagList(plotOutput(ns(s), height='auto')))
+  }
+  return(output)
 }
     
 #' plot_chip Server Functions
@@ -24,22 +27,20 @@ mod_plot_chip_ui <- function(id) {
 #'  inputs.
 #'
 #' @noRd
-#'
-#' @importFrom cowplot align_plots ggdraw plot_grid
 mod_plot_chip_server <- function(id, region_config, plot_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    output$chip_track = renderPlot({
-      chr = region_config$region_chr
-      start = as.numeric(region_config$region_start)
-      end = as.numeric(region_config$region_end)
-      ### Add resolution to chip config
-      chip_samples = plot_config$chip_samples
-      plots = plot_chip(chr, start, end, 5000, chip_samples)
-      plots = cowplot::align_plots(plotlist=plots, align='v')
-      cowplot::ggdraw(cowplot::plot_grid(plotlist=plots, ncol=1, nrow=length(plots)))
-    }, res=96, height=session$clientData$'output_plot_chip_1-chip_track_width'
-        *(0.1*length(plot_config$chip_samples)))
+    chr = region_config$region_chr
+    start = as.numeric(region_config$region_start)
+    end = as.numeric(region_config$region_end)
+    ### Add resolution to chip config
+    chip_samples = plot_config$chip_samples
+    plots = plot_chip(chr, start, end, 5000, chip_samples)
+    for(s in chip_samples){
+      output[[s]] = renderPlot({
+        plots[[s]]
+      }, res=96, height=session$clientData[[paste0('output_',ns(s),'_width')]]*0.1)
+    }
   })
 }
     

@@ -18,7 +18,6 @@ run_app <- function(
   onStart = function(){
     options(scipen=10)
     #source("data-raw/browser_data.R") # Re-enable if data needs to be rebuilt
-    library(ggplot2)
   },
   options = list(launch.browser=FALSE),
   enableBookmarking = NULL,
