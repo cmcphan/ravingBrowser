@@ -43,7 +43,9 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
     }
     session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
       align='v', axis='lr')
-    for(s in browser_data$bw$bw_sample_names){
+    # Need to use lapply instead of for loop due to the way for loops are handled by
+    #  Shiny's lazy evaluation
+    lapply(browser_data$bw$bw_sample_names, function(s){
       if(s %in% chip_samples){
         output[[s]] = renderPlot({
           cowplot::ggdraw(session$userData$plots[[paste0('chip-',s)]])
@@ -52,8 +54,13 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
           height=session$clientData[[paste0('output_',ns(s),'_width')]]*0.1
         )
       }
-      else{ session$userData$plots[[paste0('chip-',s)]] = NULL }
-    }
+      else{
+        output[[s]] = renderPlot({
+          NULL
+        })
+        session$userData$plots[[paste0('chip-',s)]] = NULL
+      }
+    })
   })
 }
     

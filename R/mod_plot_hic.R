@@ -63,7 +63,7 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
       align='v', axis='lr')
     # This approach for setting plot height comes from https://github.com/rstudio/
     #  shiny/issues/650, wisdom dispensed by one of the creators of R Shiny. Set
-    #  the element height to 'auto' and use the height in the renderPlot call.
+    #  the element height to 'auto' and set the height in the renderPlot call.
     # Output element width, height and visibility can be directly accessed
     #  as part of session$clientData. Output name needs to be namespaced
     output$hic_plot = renderPlot({
