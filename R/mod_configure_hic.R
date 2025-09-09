@@ -40,10 +40,6 @@ mod_configure_hic_ui <- function(id) {
       choices = list(Square='square', Triangular='triangular', Rectangular='rectangular'),
       selected = 'triangular',
       multiple = FALSE
-    ),
-    actionButton(
-    		inputId = ns('draw_plot'),
-    		label = 'Draw plot'
     )
   )
 }
@@ -72,8 +68,7 @@ mod_configure_hic_server <- function(id){
         elements = reactive({ input$plot_elements }),
         resolution = reactive({ input$plot_resolution }),
         normalization = reactive({ input$plot_normalization }),
-        format = reactive({ input$plot_format }),
-        draw_plot = reactive({ input$draw_plot })
+        format = reactive({ input$plot_format })
       )
  		)
   })

@@ -53,6 +53,10 @@ mod_necessary_setup_ui <- function(id) {
         min = 2,
         max = browser_data$default_chr_length
       )
+    ),
+    actionButton(
+      inputId = ns('draw_plots'),
+      label = 'Draw plots'
     )
   )
 }
@@ -149,7 +153,8 @@ mod_necessary_setup_server <- function(id){
       toggle_region_size = reactive({ input$toggle_region_size }),
       region_size_slider = reactive({ input$region_size_slider }),
       region_size_direct_min = reactive({ input$region_size_direct_min }),
-      region_size_direct_max = reactive({ input$region_size_direct_max })
+      region_size_direct_max = reactive({ input$region_size_direct_max }),
+      draw_plots = reactive({ input$draw_plots })
     )
     return( inputs )
   })

@@ -17,10 +17,6 @@ mod_configure_chip_ui <- function(id) {
       inputId = ns('chip_samples'),
       label = 'Select any number of samples to plot:',
       choices = browser_data$bw$bw_sample_names
-    ),
-    actionButton(
-      inputId = ns('draw_plot'),
-      label = 'Draw plot'
     )
   )
 }
@@ -33,8 +29,7 @@ mod_configure_chip_server <- function(id){
     ns <- session$ns
     return(
       list(
-        chip_samples = reactive({ input$chip_samples }),
-        draw_plot = reactive({ input$draw_plot })
+        chip_samples = reactive({ input$chip_samples })
       )
     )
   })

@@ -27,6 +27,8 @@ mod_plot_chip_ui <- function(id, chip_samples) {
 #'  inputs.
 #'
 #' @noRd
+#'
+#' @importFrom cowplot align_plots ggdraw
 mod_plot_chip_server <- function(id, region_config, plot_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
@@ -37,9 +39,20 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
     chip_samples = plot_config$chip_samples
     plots = plot_chip(chr, start, end, 5000, chip_samples)
     for(s in chip_samples){
-      output[[s]] = renderPlot({
-        plots[[s]]
-      }, res=96, height=session$clientData[[paste0('output_',ns(s),'_width')]]*0.1)
+      session$userData$plots[[paste0('chip-',s)]] = plots[[s]]
+    }
+    session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
+      align='v', axis='lr')
+    for(s in browser_data$bw$bw_sample_names){
+      if(s %in% chip_samples){
+        output[[s]] = renderPlot({
+          cowplot::ggdraw(session$userData$plots[[paste0('chip-',s)]])
+        },
+          res=96,
+          height=session$clientData[[paste0('output_',ns(s),'_width')]]*0.1
+        )
+      }
+      else{ session$userData$plots[[paste0('chip-',s)]] = NULL }
     }
   })
 }

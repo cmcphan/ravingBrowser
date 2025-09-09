@@ -32,6 +32,8 @@ mod_plot_hic_ui <- function(id, elements) {
 #'  resolution, normalization method and format of the requested Hi-C plot.
 #'
 #' @noRd 
+#'
+#' @importFrom cowplot align_plots ggdraw
 mod_plot_hic_server <- function(id, region_config, plot_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
@@ -43,33 +45,57 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     format = plot_config$format
     plots = list()
     plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
+    if('tads' %in% plot_config$elements){
+      plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
+    }
+    if('loops' %in% plot_config$elements){
+      plots[['loops']] = plot_loops(chr, start, end)
+    }
+    else { plots[['loops']] = NULL }
+    if('pca' %in% plot_config$elements){
+      plots[['pca']] = plot_pca(chr, start, end)
+    }
+    else { plots[['pca']] = NULL }
+    session$userData$plots[['hic']] = plots[['hic']]
+    session$userData$plots[['loops']] = plots[['loops']]
+    session$userData$plots[['pca']] = plots[['pca']]
+    session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
+      align='v', axis='lr')
     # This approach for setting plot height comes from https://github.com/rstudio/
     #  shiny/issues/650, wisdom dispensed by one of the creators of R Shiny. Set
     #  the element height to 'auto' and use the height in the renderPlot call.
     # Output element width, height and visibility can be directly accessed
     #  as part of session$clientData. Output name needs to be namespaced
     output$hic_plot = renderPlot({
-      if('tads' %in% plot_config$elements){
-        plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
-      }
-      plots[['hic']]
-    }, res=96, height=session$clientData$'output_plot_hic_1-hic_plot_width'*0.5)
+      cowplot::ggdraw(session$userData$plots[['hic']])
+    },
+      res=96,
+      height=session$clientData$'output_plot_hic_1-hic_plot_width'*0.5
+    )
 
     output$loops_track = renderPlot({
       if('loops' %in% plot_config$elements){
-        plots[['loops']] = plot_loops(chr, start, end)
-        plots[['loops']]
+        cowplot::ggdraw(session$userData$plots[['loops']])
       }
-      else{ NULL }
-    }, res=96, height=session$clientData$'output_plot_hic_1-loops_track_width'*0.1)
+      else{
+        NULL
+      }
+    },
+      res=96,
+      height=session$clientData$'output_plot_hic_1-loops_track_width'*0.1
+    )
 
     output$pca_track = renderPlot({
       if('pca' %in% plot_config$elements){
-        plots[['pca']] = plot_pca(chr, start, end)
-        plots[['pca']]
+        cowplot::ggdraw(session$userData$plots[['pca']])
       }
-      else{ NULL }
-    }, res=96, height=session$clientData$'output_plot_hic_1-pca_track_width'*0.1)
+      else{
+        NULL
+      }
+    },
+      res=96,
+      height=session$clientData$'output_plot_hic_1-pca_track_width'*0.1
+    )
   })
 }
     
