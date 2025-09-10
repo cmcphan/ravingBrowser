@@ -22,8 +22,9 @@ app_ui <- function(request) {
           uiOutput("controls")
         ),
         mainPanel(
-		      width=9, 
-		      uiOutput("plots")
+		      width=9,
+		      plotOutput('plot_panel', height=0), # To get plot output widths
+		      uiOutput('plot_ui')
 		    )
       )
     )

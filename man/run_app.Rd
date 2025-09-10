@@ -7,7 +7,6 @@
 run_app(
   onStart = function() {
      options(scipen = 10)
-     library(ggplot2)
  },
   options = list(launch.browser = FALSE),
   enableBookmarking = NULL,

@@ -11,12 +11,14 @@
 mod_configure_chip_ui <- function(id) {
   ns <- NS(id)
   tagList(
- 		tags$hr(),
-    tags$h3('ChIP-seq'),
-    checkboxGroupInput(
-      inputId = ns('chip_samples'),
-      label = 'Select any number of samples to plot:',
-      choices = browser_data$bw$bw_sample_names
+    tags$div(id='chip_controls',
+      tags$h3('ChIP-seq'),
+      checkboxGroupInput(
+        inputId = ns('chip_samples'),
+        label = 'Select any number of samples to plot:',
+        choices = browser_data$bw$bw_sample_names
+      ),
+      tags$hr()
     )
   )
 }

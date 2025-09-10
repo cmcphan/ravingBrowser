@@ -11,9 +11,11 @@
 mod_configure_fantom5_ui <- function(id) {
   ns <- NS(id)
   tagList(
- 		tags$hr(),
-  		tags$h3('FANTOM5')
-  		# UI elements go here
+    tags$div(id='fantom5_controls',
+      tags$h3('FANTOM5'),
+      # UI elements go here
+      tags$hr()
+    )
   )
 }
     

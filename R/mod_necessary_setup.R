@@ -13,50 +13,54 @@
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    checkboxGroupInput(
-      inputId = ns('plot_type_select'),
-      label = 'Select any number of plot types:',
-      choices = c('Hi-C', 'Gene Features', 'ChIP-seq', 'snRNA-seq', 'eQTLs', 'FANTOM5')
-    ),
-    selectInput(
-      inputId = ns('region_chr'),
-      label = 'Chromosome:',
-      choices = browser_data$hic_info$name,
-      selected = browser_data$default_chr,
-      multiple = FALSE
-    ),
-    sliderInput(
-      inputId = ns('region_size_slider'),
-      label = 'Region limits (in base pairs):',
-      min = 1,
-      max = browser_data$hic_info[browser_data$default_chr, 'length'],
-      value = c(1, browser_data$default_chr_length)
-    ),
-    actionButton(
-      inputId = ns('toggle_region_size'),
-      label = 'Switch range input'
-    ),
-    shinyjs::disabled(
-      numericInput(
-        inputId = ns('region_size_direct_min'),
-        label = 'Region start:',
-        value = 1,
+    tags$div(id='necessary_setup_controls',
+      checkboxGroupInput(
+        inputId = ns('plot_type_select'),
+        label = 'Select any number of plot types:',
+        choices = c('Hi-C'='hic', 'Gene Features'='genes', 'ChIP-seq'='chip',
+          'snRNA-seq'='rnaseq', 'eQTLs'='eqtls', 'FANTOM5'='fantom5')
+      ),
+      selectInput(
+        inputId = ns('region_chr'),
+        label = 'Chromosome:',
+        choices = browser_data$hic_info$name,
+        selected = browser_data$default_chr,
+        multiple = FALSE
+      ),
+      sliderInput(
+        inputId = ns('region_size_slider'),
+        label = 'Region limits (in base pairs):',
         min = 1,
-        max = browser_data$default_chr_length-1
-      )
-    ),
-    shinyjs::disabled(
-      numericInput(
-        inputId = ns('region_size_direct_max'),
-        label = 'Region end:',
-        value = browser_data$default_chr_length,
-        min = 2,
-        max = browser_data$default_chr_length
-      )
-    ),
-    actionButton(
-      inputId = ns('draw_plots'),
-      label = 'Draw plots'
+        max = browser_data$hic_info[browser_data$default_chr, 'length'],
+        value = c(1, browser_data$default_chr_length)
+      ),
+      actionButton(
+        inputId = ns('toggle_region_size'),
+        label = 'Switch range input'
+      ),
+      shinyjs::disabled(
+        numericInput(
+          inputId = ns('region_size_direct_min'),
+          label = 'Region start:',
+          value = 1,
+          min = 1,
+          max = browser_data$default_chr_length-1
+        )
+      ),
+      shinyjs::disabled(
+        numericInput(
+          inputId = ns('region_size_direct_max'),
+          label = 'Region end:',
+          value = browser_data$default_chr_length,
+          min = 2,
+          max = browser_data$default_chr_length
+        )
+      ),
+      actionButton(
+        inputId = ns('draw_plots'),
+        label = 'Draw plots'
+      ),
+      tags$hr()
     )
   )
 }
@@ -79,13 +83,16 @@ mod_necessary_setup_server <- function(id){
       #  enabled
       if(input$toggle_region_size %% 2 == 1){
         # Copy currently selected values onto the other input method
-        updateNumericInput(session, 'region_size_direct_min', value=input$region_size_slider[1])
-        updateNumericInput(session, 'region_size_direct_max', value=input$region_size_slider[2])
+        updateNumericInput(session, 'region_size_direct_min',
+          value=input$region_size_slider[1])
+        updateNumericInput(session, 'region_size_direct_max',
+          value=input$region_size_slider[2])
         shinyFeedback::hideFeedback('region_size_slider', session)
       }
       else{
         copied_value = c(input$region_size_direct_min, input$region_size_direct_max)
-        # This check is not strictly necessary but prevents a warning message being printed
+        # This check is not strictly necessary but prevents a warning message being
+        #  printed
         if(is.na(copied_value[1])){ copied_value[1]=1 }
         if(is.na(copied_value[2])){ copied_value[2]=current_max() }
         updateSliderInput(session, 'region_size_slider',
@@ -97,9 +104,12 @@ mod_necessary_setup_server <- function(id){
     
     observeEvent(input$region_chr, {
       updated_max = current_max()
-      updateSliderInput(session, 'region_size_slider', max=updated_max, value=c(1, updated_max))
-      updateNumericInput(session, 'region_size_direct_min', max=updated_max-1, value=1)
-      updateNumericInput(session, 'region_size_direct_max', max=updated_max, value=updated_max)
+      updateSliderInput(session, 'region_size_slider', max=updated_max,
+        value=c(1, updated_max))
+      updateNumericInput(session, 'region_size_direct_min', max=updated_max-1,
+        value=1)
+      updateNumericInput(session, 'region_size_direct_max', max=updated_max,
+        value=updated_max)
     })
     
     # Validate slider
@@ -121,10 +131,12 @@ mod_necessary_setup_server <- function(id){
 
       min = input$region_size_direct_min
       max = input$region_size_direct_max
-      # Need to check that opposing bound is not NA first, otherwise the comparisons break
+      # Need to check that opposing bound is not NA first, otherwise the comparisons
+      #  break
       if(is.na(min)){
         shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session,
-        text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
+        text=paste0('Invalid input: must be a number between 1 and ',
+          current_max()-1))
       }
       else if(is.na(max)){
         shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session,
@@ -140,11 +152,13 @@ mod_necessary_setup_server <- function(id){
 			#	Both should be treated as invalid
 			if(is.na(min) | min < 1 | min > current_max()-1){
         shinyFeedback::showFeedbackDanger('region_size_direct_min', session=session,
-          text=paste0('Invalid input: must be a number between 1 and ', current_max()-1))
+          text=paste0('Invalid input: must be a number between 1 and ',
+            current_max()-1))
 			}
       if(is.na(max) | max < 2 | max > current_max()){
         shinyFeedback::showFeedbackDanger('region_size_direct_max', session=session,
-          text=paste0('Invalid input: must be a number between 2 and ', current_max()))
+          text=paste0('Invalid input: must be a number between 2 and ',
+            current_max()))
 			}
     })
     inputs = list(

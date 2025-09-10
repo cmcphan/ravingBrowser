@@ -8,17 +8,11 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_hic_ui <- function(id, elements) {
+mod_plot_hic_ui <- function(id) {
   ns <- NS(id)
-  output = tagList(plotOutput(ns('hic_plot'), height='auto'))
-  # Can add a brushOpts() object to the plotOutput function here to enable brushing
-  if('loops' %in% elements){
-    output = c(output, tagList(plotOutput(ns('loops_track'), height='auto')))
-  }
-  if('pca' %in% elements){
-    output = c(output, tagList(plotOutput(ns('pca_track'), height='auto')))
-  }
-  return(output)
+  tagList(
+    uiOutput(ns('hic_plots'))
+  )
 }
     
 #' plot_hic Server Functions
@@ -43,6 +37,23 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     resolution = as.numeric(plot_config$resolution)
     normalization = plot_config$normalization
     format = plot_config$format
+
+    output$hic_plots = renderUI({
+      output = tagList(
+          plotOutput(ns('hic_track'), height='auto')
+        )
+      for(element in plot_config$elements){
+        if(element == 'tads'){
+          next
+        }
+        output = c(output, tagList(
+            plotOutput(ns(paste0(element,'_track')), height='auto')
+          )
+        )
+      }
+      return(output)
+    })
+
     plots = list()
     plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
     if('tads' %in% plot_config$elements){
@@ -56,9 +67,9 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
       plots[['pca']] = plot_pca(chr, start, end)
     }
     else { plots[['pca']] = NULL }
-    session$userData$plots[['hic']] = plots[['hic']]
-    session$userData$plots[['loops']] = plots[['loops']]
-    session$userData$plots[['pca']] = plots[['pca']]
+    session$userData$plots[['hic-hic']] = plots[['hic']]
+    session$userData$plots[['hic-loops']] = plots[['loops']]
+    session$userData$plots[['hic-pca']] = plots[['pca']]
     session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
       align='v', axis='lr')
     # This approach for setting plot height comes from https://github.com/rstudio/
@@ -66,35 +77,35 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     #  the element height to 'auto' and set the height in the renderPlot call.
     # Output element width, height and visibility can be directly accessed
     #  as part of session$clientData. Output name needs to be namespaced
-    output$hic_plot = renderPlot({
-      cowplot::ggdraw(session$userData$plots[['hic']])
+    output$hic_track = renderPlot({
+      cowplot::ggdraw(session$userData$plots[['hic-hic']])
     },
       res=96,
-      height=session$clientData$'output_plot_hic_1-hic_plot_width'*0.5
+      height=session$clientData$'output_plot_panel_width'*0.5
     )
 
     output$loops_track = renderPlot({
       if('loops' %in% plot_config$elements){
-        cowplot::ggdraw(session$userData$plots[['loops']])
+        cowplot::ggdraw(session$userData$plots[['hic-loops']])
       }
       else{
         NULL
       }
     },
       res=96,
-      height=session$clientData$'output_plot_hic_1-loops_track_width'*0.1
+      height=session$clientData$'output_plot_panel_width'*0.1
     )
 
     output$pca_track = renderPlot({
       if('pca' %in% plot_config$elements){
-        cowplot::ggdraw(session$userData$plots[['pca']])
+        cowplot::ggdraw(session$userData$plots[['hic-pca']])
       }
       else{
         NULL
       }
     },
       res=96,
-      height=session$clientData$'output_plot_hic_1-pca_track_width'*0.1
+      height=session$clientData$'output_plot_panel_width'*0.1
     )
   })
 }

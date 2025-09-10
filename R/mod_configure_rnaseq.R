@@ -11,9 +11,11 @@
 mod_configure_rnaseq_ui <- function(id) {
   ns <- NS(id)
   tagList(
- 		tags$hr(),
-  		tags$h3('snRNA-seq')
-  		# UI elements go here
+    tags$div(id='rnaseq_controls',
+      tags$h3('snRNA-seq'),
+      # UI elements go here
+      tags$hr()
+    )
   )
 }
     

@@ -13,33 +13,35 @@
 mod_configure_hic_ui <- function(id) {
   ns <- NS(id)
   tagList(
-  		tags$hr(),
-  		tags$h2('Hi-C'),
- 		checkboxGroupInput(
-      inputId = ns('plot_elements'),
-      label = 'Select any number of elements to plot:',
-      choices = c('TADs'='tads', 'Loops'='loops', 'A/B Compartment Scores (PCA)'='pca')
-    ),
-    selectInput(
-      inputId = ns('plot_resolution'),
-      label = 'Resolution (base pairs):',
-      choices = browser_data$resolutions,
-      selected = browser_data$resolutions[1],
-      multiple = FALSE
-    ),
-    selectInput(
-      inputId = ns('plot_normalization'),
-      label = 'Normalization method:',
-      choices = browser_data$normalizations,
-      selected = 'KR',
-      multiple = FALSE
-    ),
-    selectInput(
-      inputId = ns('plot_format'),
-      label = 'Plot format:',
-      choices = list(Square='square', Triangular='triangular', Rectangular='rectangular'),
-      selected = 'triangular',
-      multiple = FALSE
+    tags$div(id='hic_controls',
+      tags$h2('Hi-C'),
+      checkboxGroupInput(
+        inputId = ns('plot_elements'),
+        label = 'Select any number of elements to plot:',
+        choices = c('TADs'='tads', 'Loops'='loops', 'A/B Compartment Scores (PCA)'='pca')
+      ),
+      selectInput(
+        inputId = ns('plot_resolution'),
+        label = 'Resolution (base pairs):',
+        choices = browser_data$resolutions,
+        selected = browser_data$resolutions[1],
+        multiple = FALSE
+      ),
+      selectInput(
+        inputId = ns('plot_normalization'),
+        label = 'Normalization method:',
+        choices = browser_data$normalizations,
+        selected = 'KR',
+        multiple = FALSE
+      ),
+      selectInput(
+        inputId = ns('plot_format'),
+        label = 'Plot format:',
+        choices = list(Square='square', Triangular='triangular', Rectangular='rectangular'),
+        selected = 'triangular',
+        multiple = FALSE
+      ),
+      tags$hr()
     )
   )
 }

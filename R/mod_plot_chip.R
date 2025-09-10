@@ -8,13 +8,11 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_chip_ui <- function(id, chip_samples) {
+mod_plot_chip_ui <- function(id) {
   ns <- NS(id)
-  output = tagList()
-  for(s in chip_samples){
-    output = c(output, tagList(plotOutput(ns(s), height='auto')))
-  }
-  return(output)
+  tagList(
+    uiOutput(ns('chip_plots'))
+  )
 }
     
 #' plot_chip Server Functions
@@ -37,6 +35,18 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
     end = as.numeric(region_config$region_end)
     ### Add resolution to chip config
     chip_samples = plot_config$chip_samples
+
+    output$chip_plots = renderUI({
+      output = tagList()
+      for(s in chip_samples){
+        output = c(output, tagList(
+            plotOutput(ns(paste0(s)), height='auto')
+          )
+        )
+      }
+      return(output)
+    })
+
     plots = plot_chip(chr, start, end, 5000, chip_samples)
     for(s in chip_samples){
       session$userData$plots[[paste0('chip-',s)]] = plots[[s]]
@@ -51,14 +61,12 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
           cowplot::ggdraw(session$userData$plots[[paste0('chip-',s)]])
         },
           res=96,
-          height=session$clientData[[paste0('output_',ns(s),'_width')]]*0.1
+          height=session$clientData$'output_plot_panel_width'*0.1
         )
       }
       else{
-        output[[s]] = renderPlot({
-          NULL
-        })
         session$userData$plots[[paste0('chip-',s)]] = NULL
+        NULL
       }
     })
   })

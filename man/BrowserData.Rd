@@ -67,7 +67,8 @@ scores) matching to the loaded HiC file}
 \if{html}{\out{<a id="method-BrowserData-new"></a>}}
 \if{latex}{\out{\hypertarget{method-BrowserData-new}{}}}
 \subsection{Method \code{new()}}{
-Create a new BrowserData object and build the data from the input files provided.
+Create a new BrowserData object and build the data from the input
+files provided.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{BrowserData$new(
   hic_path = NULL,
@@ -83,7 +84,8 @@ Create a new BrowserData object and build the data from the input files provided
 \describe{
 \item{\code{hic_path}}{File path to the corresponding HiC matrix input file}
 
-\item{\code{tads_path}}{File path to the corresponding topologically associated domain input file}
+\item{\code{tads_path}}{File path to the corresponding topologically associated domain
+input file}
 
 \item{\code{loops_path}}{File path to the corresponding loops input file}
 

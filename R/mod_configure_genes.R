@@ -11,9 +11,11 @@
 mod_configure_genes_ui <- function(id) {
   ns <- NS(id)
   tagList(
- 		tags$hr(),
-  		tags$h3('Gene Features')
-  		# UI elements go here
+    tags$div(id='genes_controls',
+      tags$h3('Gene Features'),
+      # UI elements go here
+      tags$hr()
+    )
   )
 }
     
