@@ -4,7 +4,7 @@
 #'  static data required for sharing among ravingBrowser modules, e.g. data
 #'  frames for plot construction and back end metadata
 #'
-#' @field hic_path String representing the file path to the .hic file
+#' @field hic String representing the file path to the .hic file
 #' @field hic_chrs Vector of strings enumerating the available chromosomes in the
 #'  loaded HiC file
 #' @field hic_info Data frame containing basic metadata about loaded HiC file. Has
@@ -20,8 +20,9 @@
 #' @field tads,loops,pca Data frames containing data for topologically associated
 #'  domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
 #'  scores) matching to the loaded HiC file
-#' @field bw Bigwig file information used internally by [get_summaries()]
-#' @field hg19data Data frame containing a variety of information about gene features
+#' @field chip Bigwig file information for ChIP datasets, used internally by
+#'  [get_summaries()]
+#' @field gene_data Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
 #' 
 #' @importFrom R6 R6Class
@@ -31,7 +32,7 @@
 BrowserData <- R6::R6Class(
 	'BrowserData',
 	public = list(
-		hic_path = NULL,
+		hic = NULL,
 		hic_chrs = NULL,
 		hic_info = NULL,
 		resolutions = NULL,
@@ -41,8 +42,8 @@ BrowserData <- R6::R6Class(
 		tads = NULL,
 		loops = NULL,
 		pca = NULL,
-		bw = NULL,
-		hg19data = NULL,
+		chip = NULL,
+		gene_data = NULL,
 		#' @description Create a new BrowserData object and build the data from the input
 		#'  files provided.
 		#' @param hic_path File path to the corresponding HiC matrix input file
@@ -55,7 +56,7 @@ BrowserData <- R6::R6Class(
 		initialize = function(hic_path=NULL, tads_path=NULL, loops_path=NULL, 
 									pca_path=NULL, chip_paths=NULL){
 			if(!is.null(hic_path)){
-				self$hic_path = hic_path
+				self$hic = hic_path
 				self$hic_chrs = strawr::readHicChroms(hic_path)
 				hic_info = sort_by.data.frame(self$hic_chrs, self$hic_chrs$index)
 				rownames(hic_info) = hic_info$name
@@ -88,19 +89,19 @@ BrowserData <- R6::R6Class(
 				self$pca = pca
 			}
 			if(!is.null(chip_paths)){
-				self$bw = read_coldata(bws=chip_paths, build='hg19')
+				self$chip = read_coldata(bws=chip_paths, build='hg38')
 			}
-			hg19data = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
+			gene_data = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
 			# Rename columns so they don't clash with other variables and are consistent
 			#  with other structures
-			names(hg19data)[names(hg19data) == c('chr', 'start', 'end')] = c('gChr',
+			names(gene_data)[names(gene_data) == c('chr', 'start', 'end')] = c('gChr',
 				'gStart', 'gEnd')
-			hg19data$gStart = as.numeric(hg19data$gStart)
-			hg19data$gEnd = as.numeric(hg19data$gEnd)
-			hg19data$width = as.numeric(hg19data$width)
-			hg19data$strand[hg19data$strand=='-1'] = '0'
-			hg19data$strand = as.numeric(hg19data$strand)
-			self$hg19data = hg19data
+			gene_data$gStart = as.numeric(gene_data$gStart)
+			gene_data$gEnd = as.numeric(gene_data$gEnd)
+			gene_data$width = as.numeric(gene_data$width)
+			gene_data$strand[gene_data$strand=='-1'] = '0'
+			gene_data$strand = as.numeric(gene_data$strand)
+			self$gene_data = gene_data
 		}
 	)
 )

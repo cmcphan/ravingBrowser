@@ -12,13 +12,19 @@
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
+  plot_types = list('hic'='Hi-C', 'chip'='ChIP-seq')
+  plot_selections = list()
+  for(type in names(plot_types)){
+    if(!is.null(browser_data[[type]])){
+      plot_selections[[ plot_types[[type]] ]] = type
+    }
+  }
   tagList(
     tags$div(id='necessary_setup_controls',
       checkboxGroupInput(
         inputId = ns('plot_type_select'),
         label = 'Select any number of plot types:',
-        choices = c('Hi-C'='hic', 'Gene Features'='genes', 'ChIP-seq'='chip',
-          'snRNA-seq'='rnaseq', 'eQTLs'='eqtls', 'FANTOM5'='fantom5')
+        choices = plot_selections
       ),
       selectInput(
         inputId = ns('region_chr'),

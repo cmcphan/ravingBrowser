@@ -23,7 +23,7 @@
 #' importFrom strawr straw
 plot_hic <- function(chr, start, end, resolution, normalization='KR',
                 format='triangular'){
-  hic_path = browser_data$hic_path
+  hic_path = browser_data$hic
   if(format == 'square'){
     strawr_query = paste(chr,start,end, sep=':')
     interactions = strawr::straw(normalization, hic_path, strawr_query,
@@ -158,8 +158,9 @@ plot_loops <- function(chr, start, end){
   loop_graph = tidygraph::tbl_graph(nodes = nodes, edges = edges)
   loop_layout = ggraph::create_layout(loop_graph, layout='linear', sort.by=bin,
     use.numeric=TRUE)
+  min_pval = min(included_cis_loops['lPval'])
   plot = ggraph::ggraph(loop_layout) +
-    ggraph::geom_edge_arc0(ggplot2::aes(alpha=1/lPval), strength = -1) +
+    ggraph::geom_edge_arc0(ggplot2::aes(alpha=min_pval/lPval), strength = -1) +
     ggraph::theme_graph(plot_margin=ggplot2::margin(0, 0, 0, 0),
       base_family='sans') +
     ggplot2::theme(aspect.ratio=0.05) +

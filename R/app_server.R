@@ -3,7 +3,6 @@
 #' @param input,output,session Internal parameters for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @importFrom shinyFeedback showFeedbackWarning hideFeedback
 #' @noRd
 app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
@@ -35,8 +34,9 @@ app_server <- function(input, output, session) {
 		output$plot_ui = renderUI({
 			output = tagList()
 			for(type in plot_types()){
+				elements = get(paste0(type,'_config'))$elements()
 				output = c(output, tagList(
-						get(paste0('mod_plot_',type,'_ui'))(paste0('plot_',type,'_1'))
+						get(paste0('mod_plot_',type,'_ui'))(paste0('plot_',type,'_1'), elements)
 					)
 				)
 			}
@@ -47,10 +47,12 @@ app_server <- function(input, output, session) {
   }, ignoreNULL = FALSE )
   
   observeEvent(basic_config$draw_plots(),{
-		shinyFeedback::hideFeedback('necessary_setup_1-draw_plots', session)
 		region_config = region_config(basic_config)
 		region_change = !identical(session$userData$configs[['region']], region_config)
 
+		### This can be turned into a for loop to avoid doing this process explicitly
+		###  for every plot type - for each type in plot types, build up plot_config
+		###  based on names(get(paste0(type,'_config')))
 		if('hic' %in% plot_types()){
 			plot_config = list(
 				elements = hic_config$elements(),
@@ -67,7 +69,7 @@ app_server <- function(input, output, session) {
 
 		if('chip' %in% plot_types()){
 			plot_config = list(
-				chip_samples = chip_config$chip_samples()
+				elements = chip_config$elements()
 			)
 			if(!identical(session$userData$configs[['chip']], plot_config) |
 					region_change){

@@ -3,16 +3,21 @@
 #' @description Draw a ChIP track plot according to user-specified configuration.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param chip_samples List of samples to be included.
+#' @param elements List of samples to be included.
 #'
 #' @noRd
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_chip_ui <- function(id) {
+mod_plot_chip_ui <- function(id, elements) {
   ns <- NS(id)
-  tagList(
-    uiOutput(ns('chip_plots'))
-  )
+  output = tagList()
+  for(s in elements){
+    output = c(output, tagList(
+        plotOutput(ns(paste0(s)), height='auto')
+      )
+    )
+  }
+  return(output)
 }
     
 #' plot_chip Server Functions
@@ -34,18 +39,7 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
     start = as.numeric(region_config$region_start)
     end = as.numeric(region_config$region_end)
     ### Add resolution to chip config
-    chip_samples = plot_config$chip_samples
-
-    output$chip_plots = renderUI({
-      output = tagList()
-      for(s in chip_samples){
-        output = c(output, tagList(
-            plotOutput(ns(paste0(s)), height='auto')
-          )
-        )
-      }
-      return(output)
-    })
+    chip_samples = plot_config$elements
 
     plots = plot_chip(chr, start, end, 5000, chip_samples)
     for(s in chip_samples){
@@ -55,7 +49,7 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
       align='v', axis='lr')
     # Need to use lapply instead of for loop due to the way for loops are handled by
     #  Shiny's lazy evaluation
-    lapply(browser_data$bw$bw_sample_names, function(s){
+    lapply(browser_data$chip$bw_sample_names, function(s){
       if(s %in% chip_samples){
         output[[s]] = renderPlot({
           cowplot::ggdraw(session$userData$plots[[paste0('chip-',s)]])
@@ -66,7 +60,9 @@ mod_plot_chip_server <- function(id, region_config, plot_config){
       }
       else{
         session$userData$plots[[paste0('chip-',s)]] = NULL
-        NULL
+        output[[s]] = renderPlot({
+          NULL
+        })
       }
     })
   })

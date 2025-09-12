@@ -12,13 +12,20 @@
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_configure_hic_ui <- function(id) {
   ns <- NS(id)
+  plot_types = list('tads'='TADs', 'loops'='Loops', 'pca'='A/B Compartment Scores')
+  plot_selections = list()
+  for(type in names(plot_types)){
+    if(!is.null(browser_data[[type]])){
+      plot_selections[[ plot_types[[type]] ]] = type
+    }
+  }
   tagList(
     tags$div(id='hic_controls',
       tags$h2('Hi-C'),
       checkboxGroupInput(
         inputId = ns('plot_elements'),
         label = 'Select any number of elements to plot:',
-        choices = c('TADs'='tads', 'Loops'='loops', 'A/B Compartment Scores (PCA)'='pca')
+        choices = plot_selections
       ),
       selectInput(
         inputId = ns('plot_resolution'),

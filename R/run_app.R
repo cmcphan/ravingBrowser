@@ -17,13 +17,16 @@
 run_app <- function(
   onStart = function(){
     options(scipen=10)
+    if(!exists('browser_data', .GlobalEnv)){
+      stop('Browser data not loaded. Do you need to run build_data()?')
+    }
   },
   options = list(launch.browser=FALSE),
   enableBookmarking = NULL,
   uiPattern = "/",
   ...
 ) {
-	
+
   with_golem_options(
     app = shinyApp(
       ui = app_ui,

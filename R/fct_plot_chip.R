@@ -22,7 +22,7 @@ plot_chip <- function(chr, start, end, resolution=5000, chip_samples) {
     }
     chip_query = paste0('chr',chr,':',start,'-',end)
     bedfile = gen_windows(chr=chr, start=start, end=end, window_size=resolution)
-    bw = subset(browser_data$bw, bw_sample_names %in% chip_samples)
+    bw = subset(browser_data$chip, bw_sample_names %in% chip_samples)
     chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files)
     chip_signal_names = bw$bw_sample_names
     plots = list()

@@ -8,11 +8,21 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_hic_ui <- function(id) {
+mod_plot_hic_ui <- function(id, elements) {
   ns <- NS(id)
-  tagList(
-    uiOutput(ns('hic_plots'))
+  output = tagList(
+    plotOutput(ns('hic_track'), height='auto')
   )
+  for(element in elements){
+    if(element == 'tads'){
+      next
+    }
+    output = c(output, tagList(
+        plotOutput(ns(paste0(element,'_track')), height='auto')
+      )
+    )
+  }
+  return(output)
 }
     
 #' plot_hic Server Functions
@@ -37,22 +47,6 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     resolution = as.numeric(plot_config$resolution)
     normalization = plot_config$normalization
     format = plot_config$format
-
-    output$hic_plots = renderUI({
-      output = tagList(
-          plotOutput(ns('hic_track'), height='auto')
-        )
-      for(element in plot_config$elements){
-        if(element == 'tads'){
-          next
-        }
-        output = c(output, tagList(
-            plotOutput(ns(paste0(element,'_track')), height='auto')
-          )
-        )
-      }
-      return(output)
-    })
 
     plots = list()
     plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
