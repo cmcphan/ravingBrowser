@@ -29,7 +29,7 @@ app_server <- function(input, output, session) {
 		deselected = prev_types[!prev_types %in% plot_types()]
 		for(type in new_selections){
 			insertUI(selector=place_ui(type, plot_types()), where='afterEnd',
-				ui=get(paste0('mod_configure_',type,'_ui'))(paste0('configure_',type,'_1')))
+				ui=get(paste0('mod_configure_',type,'_ui'))(paste0('configure_',type,'_1'), session))
 		}
 
 		for(type in deselected){

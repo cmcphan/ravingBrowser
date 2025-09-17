@@ -8,13 +8,17 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList tags
-mod_configure_chip_ui <- function(id) {
+mod_configure_chip_ui <- function(id, session) {
   ns <- NS(id)
 
-  region_width = browser_data$hic_info[browser_data$default_chr, 'length']-1
+  region_width = session$userData$region$region_width
+  if(is.null(region_width)){
+    region_width = browser_data$hic_info[browser_data$default_chr, 'length']-1
+  }
   min = as.integer(region_width/2000)
   max = as.integer(region_width/1000)
   step = as.integer((max-min)/100)
+
   tagList(
     tags$div(id='chip_controls',
       tags$h3('ChIP-seq'),

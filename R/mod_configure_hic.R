@@ -10,7 +10,7 @@
 #' @importFrom shiny NS tagList tags checkboxGroupInput selectInput actionButton
 #' @importFrom shinyjs disable
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
-mod_configure_hic_ui <- function(id) {
+mod_configure_hic_ui <- function(id, session) {
   ns <- NS(id)
   plot_types = list('tads'='TADs', 'loops'='Loops', 'pca'='A/B Compartment Scores')
   plot_selections = list()
