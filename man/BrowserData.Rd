@@ -42,6 +42,9 @@ scores) matching to the loaded HiC file}
 
 \item{\code{gene_data}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
+
+\item{\code{plot_types}}{Vector of strings detailing the plot types loaded in the data
+structure}
 }
 \if{html}{\out{</div>}}
 }

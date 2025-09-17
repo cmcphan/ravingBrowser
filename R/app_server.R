@@ -3,6 +3,8 @@
 #' @param input,output,session Internal parameters for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @importFrom shinycssloaders showSpinner hideSpinner
+#' @importFrom shinyjs addClass removeClass
 #' @noRd
 app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
@@ -29,7 +31,8 @@ app_server <- function(input, output, session) {
 		deselected = prev_types[!prev_types %in% plot_types()]
 		for(type in new_selections){
 			insertUI(selector=place_ui(type, plot_types()), where='afterEnd',
-				ui=get(paste0('mod_configure_',type,'_ui'))(paste0('configure_',type,'_1'), session))
+				ui=get(paste0('mod_configure_',type,'_ui'))(paste0('configure_',type,'_1'), 
+          session))
 		}
 
 		for(type in deselected){
@@ -67,6 +70,10 @@ app_server <- function(input, output, session) {
   observeEvent(basic_config$draw_plots(),{
     region_change = session$userData$regionChange
 
+    shinycssloaders::showSpinner('plot_ui')
+    for(type in plot_types()){
+      shinyjs::addClass(selector='*.shiny-plot-output', class='recalculating')
+    }
 		for(type in browser_data$plot_types){
       if(type %in% plot_types()){
         # Build plot config
@@ -74,17 +81,27 @@ app_server <- function(input, output, session) {
         for(n in names(get(paste0(type,'_config')))){
           plot_config[[n]] = get(paste0(type,'_config'))[[n]]()
         }
-        # Repaint plot if configuration or region has changed
+        # Paint plot if configuration or region has changed
         if(!identical(session$userData$configs[[type]], plot_config) | region_change){
-          get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), region(), plot_config)
+          get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
+            region(), plot_config)
+        }
+        else{
+          get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
+            region(), plot_config, draw=FALSE)
         }
         session$userData$configs[[type]] = plot_config
       }
       # For plots not selected, if the region has changed nullify their outputs
       else if(region_change){
-        get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), invalidate=TRUE)
+        get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
+          invalidate=TRUE)
       }
     }
+    for(type in plot_types()){
+      shinyjs::removeClass(selector='*.shiny-plot-output', class='recalculating')
+    }
+    shinycssloaders::hideSpinner('plot_ui')
 
 		session$userData$region = region()
     session$userData$regionChange = FALSE

@@ -6,7 +6,8 @@
 \usage{
 run_app(
   onStart = function() {
-     options(scipen = 10)
+     options(scipen = 10, spinner.type = 7, spinner.caption =
+    "Loading plots", spinner.hide.ui = FALSE)
      if (!exists("browser_data",
     .GlobalEnv)) {
         

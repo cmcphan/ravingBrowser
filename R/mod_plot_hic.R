@@ -37,11 +37,15 @@ mod_plot_hic_ui <- function(id, elements) {
 #' @param invalidate Flag which determines whether all plots in this module should be
 #'  replaced with NULL. For clearing plots when configuration has changed/plot is 
 #'  deselected. Defaults to FALSE.
+#' @param draw Flag which determines whether plots should be (re)drawn or not. If
+#'  set to false, just realigns the existing plots with any added since drawing. 
+#'  Defaults to TRUE.
 #'
 #' @noRd 
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_hic_server <- function(id, region_config, plot_config, invalidate=FALSE){
+mod_plot_hic_server <- function(id, region_config, plot_config, 
+  invalidate=FALSE, draw=TRUE){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -61,29 +65,31 @@ mod_plot_hic_server <- function(id, region_config, plot_config, invalidate=FALSE
       return(NULL)
     }
 
-    chr = region_config$region_chr
-    start = as.numeric(region_config$region_start)
-    end = as.numeric(region_config$region_end)
-    resolution = as.numeric(plot_config$resolution)
-    normalization = plot_config$normalization
-    format = plot_config$format
+    if(draw){
+      chr = region_config$region_chr
+      start = as.numeric(region_config$region_start)
+      end = as.numeric(region_config$region_end)
+      resolution = as.numeric(plot_config$resolution)
+      normalization = plot_config$normalization
+      format = plot_config$format
 
-    plots = list()
-    plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
-    if('tads' %in% plot_config$elements){
-      plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
+      plots = list()
+      plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
+      if('tads' %in% plot_config$elements){
+        plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
+      }
+      if('loops' %in% plot_config$elements){
+        plots[['loops']] = plot_loops(chr, start, end)
+      }
+      else { plots[['loops']] = NULL }
+      if('pca' %in% plot_config$elements){
+        plots[['pca']] = plot_pca(chr, start, end)
+      }
+      else { plots[['pca']] = NULL }
+      session$userData$plots[['hic-hic']] = plots[['hic']]
+      session$userData$plots[['hic-loops']] = plots[['loops']]
+      session$userData$plots[['hic-pca']] = plots[['pca']]
     }
-    if('loops' %in% plot_config$elements){
-      plots[['loops']] = plot_loops(chr, start, end)
-    }
-    else { plots[['loops']] = NULL }
-    if('pca' %in% plot_config$elements){
-      plots[['pca']] = plot_pca(chr, start, end)
-    }
-    else { plots[['pca']] = NULL }
-    session$userData$plots[['hic-hic']] = plots[['hic']]
-    session$userData$plots[['hic-loops']] = plots[['loops']]
-    session$userData$plots[['hic-pca']] = plots[['pca']]
     if(length(session$userData$plots) > 0){
       session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
         align='v', axis='lr')

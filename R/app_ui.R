@@ -5,6 +5,7 @@
 #' @import shiny
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinyFeedback useShinyFeedback
+#' @importFrom shinycssloaders withSpinner
 #' @noRd
 app_ui <- function(request) {
   tagList(
@@ -24,7 +25,7 @@ app_ui <- function(request) {
         mainPanel(
 		      width=9,
 		      plotOutput('plot_panel', height=0), # To get plot output widths
-		      uiOutput('plot_ui')
+		      shinycssloaders::withSpinner(uiOutput('plot_ui'))
 		    )
       )
     )

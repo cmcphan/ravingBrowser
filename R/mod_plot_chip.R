@@ -13,7 +13,7 @@ mod_plot_chip_ui <- function(id, elements) {
   output = tagList()
   for(s in elements){
     output = c(output, tagList(
-        plotOutput(ns(paste0(s)), height='auto')
+        plotOutput(ns(s), height='auto')
       )
     )
   }
@@ -31,11 +31,15 @@ mod_plot_chip_ui <- function(id, elements) {
 #' @param invalidate Flag which determines whether all plots in this module should be
 #'  replaced with NULL. For clearing plots when configuration has changed/plot is 
 #'  deselected. Defaults to FALSE.
+#' @param draw Flag which determines whether plots should be (re)drawn or not. If
+#'  set to false, just realigns the existing plots with any added since drawing. 
+#'  Defaults to TRUE.
 #'
 #' @noRd
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_chip_server <- function(id, region_config, plot_config, invalidate=FALSE){
+mod_plot_chip_server <- function(id, region_config, plot_config, 
+  invalidate=FALSE, draw=TRUE){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -49,15 +53,16 @@ mod_plot_chip_server <- function(id, region_config, plot_config, invalidate=FALS
       return(NULL)
     }
 
-    chr = region_config$region_chr
-    start = as.numeric(region_config$region_start)
-    end = as.numeric(region_config$region_end)
     chip_samples = plot_config$elements
-    resolution = plot_config$resolution
-
-    plots = plot_chip(chr, start, end, resolution, chip_samples)
-    for(s in chip_samples){
-      session$userData$plots[[paste0('chip-',s)]] = plots[[s]]
+    if(draw){
+      chr = region_config$region_chr
+      start = as.numeric(region_config$region_start)
+      end = as.numeric(region_config$region_end)
+      resolution = plot_config$resolution
+      plots = plot_chip(chr, start, end, resolution, chip_samples)
+      for(s in chip_samples){
+        session$userData$plots[[paste0('chip-',s)]] = plots[[s]]
+      }
     }
     if(length(session$userData$plots) > 0){
       session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,

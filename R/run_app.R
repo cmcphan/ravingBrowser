@@ -16,7 +16,8 @@
 #' @importFrom golem with_golem_options
 run_app <- function(
   onStart = function(){
-    options(scipen=10)
+    options(scipen=10, spinner.type=7, spinner.caption='Loading plots', 
+      spinner.hide.ui=FALSE)
     if(!exists('browser_data', .GlobalEnv)){
       stop('Browser data not loaded. Do you need to run build_data()?')
     }
