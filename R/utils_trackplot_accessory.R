@@ -15,6 +15,7 @@
 #'  should be provided as a character vector
 #'
 #' @import data.table
+#' @importFrom parallel mclapply
 read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
   input_type = "bw"){
   
@@ -89,7 +90,7 @@ get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
   
   summaries = parallel::mclapply(bigWigs, FUN = function(bw){
     bn = gsub(pattern = "\\.bw$|\\.bigWig$", replacement = "", x = basename(bw))
-    cmd = paste("bwtool summary -with-sum -keep-bed -header", bedSimple, bw,
+    cmd = paste("bwtool summary -keep-bed -header -fill=0", bedSimple, bw,
       paste0(op_dir, bn, ".summary"))
     system(command = cmd, intern = TRUE)
     paste0(op_dir, bn, ".summary")
