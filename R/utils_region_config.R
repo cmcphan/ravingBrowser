@@ -13,7 +13,6 @@
 region_config <- function(basic_config) {
   # Build region config list - check which region bounds to use
   region_config = list(
-    plot_types = basic_config$plot_type_select(),
     region_chr = basic_config$region_chr()
   )
   if(basic_config$toggle_region_size() %% 2 == 1){
@@ -24,5 +23,6 @@ region_config <- function(basic_config) {
     region_config$region_start = basic_config$region_size_slider()[1]
     region_config$region_end = basic_config$region_size_slider()[2]
   }
+  region_config$region_width = region_config$region_end - region_config$region_start
   return(region_config)
 }

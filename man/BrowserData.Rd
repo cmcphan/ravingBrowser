@@ -14,7 +14,7 @@ Relative file paths should work from the root directory of the package.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
-\item{\code{hic_path}}{String representing the file path to the .hic file}
+\item{\code{hic}}{String representing the file path to the .hic file}
 
 \item{\code{hic_chrs}}{Vector of strings enumerating the available chromosomes in the
 loaded HiC file}
@@ -37,9 +37,10 @@ default chromosome}
 domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
 scores) matching to the loaded HiC file}
 
-\item{\code{bw}}{Bigwig file information used internally by \code{\link[=get_summaries]{get_summaries()}}}
+\item{\code{chip}}{Bigwig file information for ChIP datasets, used internally by
+\code{\link[=get_summaries]{get_summaries()}}}
 
-\item{\code{hg19data}}{Data frame containing a variety of information about gene features
+\item{\code{gene_data}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
 }
 \if{html}{\out{</div>}}

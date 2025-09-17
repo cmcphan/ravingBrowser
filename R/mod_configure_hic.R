@@ -56,22 +56,19 @@ mod_configure_hic_ui <- function(id) {
 #' configure_hic Server Functions
 #'
 #' @param id Internal Shiny parameter
-#' @param disabled Should the UI elements be disabled? Defaults to FALSE. Used to prevent user
-#' 	from moving on when region inputs are invalid
 #' @noRd 
 mod_configure_hic_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     # This check should not be necessary, but just in case a user manages to break
     #  the UI somehow, it's handled
-    observeEvent(input$draw_plot, {
-      message = validate_hic(input$plot_resolution, input$plot_normalization,
-        input$plot_format)
-      if(!is.na(message)){
-        shinyFeedback::showFeedbackDanger('draw_plot', session, text=message)
-      }
-      else{ shinyFeedback::hideFeedback('draw_plot', session)}
-    })
+    #message = validate_hic(input$plot_resolution, input$plot_normalization,
+    #  input$plot_format)
+    #if(!is.na(message)){
+    #  shinyFeedback::showFeedbackDanger('draw_plot', session, text=message)
+    #}
+    #else{ shinyFeedback::hideFeedback('draw_plot', session)}
+    
  		return( 
       list(
         elements = reactive({ input$plot_elements }),

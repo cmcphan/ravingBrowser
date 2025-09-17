@@ -24,6 +24,8 @@
 #'  [get_summaries()]
 #' @field gene_data Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
+#' @field plot_types Vector of strings detailing the plot types loaded in the data 
+#'  structure
 #' 
 #' @importFrom R6 R6Class
 #' @import strawr
@@ -44,6 +46,7 @@ BrowserData <- R6::R6Class(
 		pca = NULL,
 		chip = NULL,
 		gene_data = NULL,
+		plot_types = NULL,
 		#' @description Create a new BrowserData object and build the data from the input
 		#'  files provided.
 		#' @param hic_path File path to the corresponding HiC matrix input file
@@ -66,6 +69,7 @@ BrowserData <- R6::R6Class(
 				self$normalizations = strawr::readHicNormTypes(hic_path)
 				self$default_chr = hic_info$name[1]
 				self$default_chr_length = hic_info[self$default_chr, 'length']
+        self$plot_types = c(self$plot_types, 'hic')
 			}
 			if(!is.null(tads_path)){
 				tads = readr::read_tsv(tads_path, col_select=c(1, 2, 3), col_names=FALSE)
@@ -90,6 +94,7 @@ BrowserData <- R6::R6Class(
 			}
 			if(!is.null(chip_paths)){
 				self$chip = read_coldata(bws=chip_paths, build='hg38')
+        self$plot_types = c(self$plot_types, 'chip')
 			}
 			gene_data = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
 			# Rename columns so they don't clash with other variables and are consistent

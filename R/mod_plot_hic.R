@@ -34,13 +34,33 @@ mod_plot_hic_ui <- function(id, elements) {
 #' @param plot_config A named list of plot parameters formed from user
 #'  inputs. Must include the selected
 #'  resolution, normalization method and format of the requested Hi-C plot.
+#' @param invalidate Flag which determines whether all plots in this module should be
+#'  replaced with NULL. For clearing plots when configuration has changed/plot is 
+#'  deselected. Defaults to FALSE.
 #'
 #' @noRd 
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_hic_server <- function(id, region_config, plot_config){
+mod_plot_hic_server <- function(id, region_config, plot_config, invalidate=FALSE){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
+
+    if(invalidate){
+      output$hic_track = renderPlot({ NULL }, 
+        res = 96,
+        height=session$clientData$'output_plot_panel_width'*0.1
+      )
+      output$loops_track = renderPlot({ NULL }, 
+        res = 96,
+        height=session$clientData$'output_plot_panel_width'*0.1
+      )
+      output$pca_track = renderPlot({ NULL }, 
+        res = 96,
+        height=session$clientData$'output_plot_panel_width'*0.1
+      )
+      return(NULL)
+    }
+
     chr = region_config$region_chr
     start = as.numeric(region_config$region_start)
     end = as.numeric(region_config$region_end)
@@ -64,8 +84,10 @@ mod_plot_hic_server <- function(id, region_config, plot_config){
     session$userData$plots[['hic-hic']] = plots[['hic']]
     session$userData$plots[['hic-loops']] = plots[['loops']]
     session$userData$plots[['hic-pca']] = plots[['pca']]
-    session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
-      align='v', axis='lr')
+    if(length(session$userData$plots) > 0){
+      session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
+        align='v', axis='lr')
+    }
     # This approach for setting plot height comes from https://github.com/rstudio/
     #  shiny/issues/650, wisdom dispensed by one of the creators of R Shiny. Set
     #  the element height to 'auto' and set the height in the renderPlot call.
