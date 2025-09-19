@@ -10,6 +10,7 @@ frames for plot construction and back end metadata
 }
 \note{
 Relative file paths should work from the root directory of the package.
+Generally not provided manually but set through build_data()
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -40,8 +41,12 @@ scores) matching to the loaded HiC file}
 \item{\code{chip}}{Bigwig file information for ChIP datasets, used internally by
 \code{\link[=get_summaries]{get_summaries()}}}
 
-\item{\code{gene_data}}{Data frame containing a variety of information about gene features
+\item{\code{genes}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
+
+\item{\code{gene_feature_counts}}{Named vector of unique gene biotypes from \code{genes} data
+frame with values set to the feature count of each biotype. Sorted in descending
+order}
 
 \item{\code{plot_types}}{Vector of strings detailing the plot types loaded in the data
 structure}

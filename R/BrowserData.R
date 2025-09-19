@@ -22,8 +22,11 @@
 #'  scores) matching to the loaded HiC file
 #' @field chip Bigwig file information for ChIP datasets, used internally by
 #'  [get_summaries()]
-#' @field gene_data Data frame containing a variety of information about gene features
+#' @field genes Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
+#' @field gene_feature_counts Named vector of unique gene biotypes from `genes` data
+#'  frame with values set to the feature count of each biotype. Sorted in descending 
+#'  order 
 #' @field plot_types Vector of strings detailing the plot types loaded in the data 
 #'  structure
 #' 
@@ -45,7 +48,8 @@ BrowserData <- R6::R6Class(
 		loops = NULL,
 		pca = NULL,
 		chip = NULL,
-		gene_data = NULL,
+		genes = NULL,
+    gene_feature_counts = NULL,
 		plot_types = NULL,
 		#' @description Create a new BrowserData object and build the data from the input
 		#'  files provided.
@@ -56,6 +60,7 @@ BrowserData <- R6::R6Class(
 		#' @param pca_path File path to the corresponding PCA input file
 		#' @param chip_paths File paths to the corresponding ChIP Bigwig input files
 		#' @note Relative file paths should work from the root directory of the package.
+    #'  Generally not provided manually but set through build_data()
 		initialize = function(hic_path=NULL, tads_path=NULL, loops_path=NULL, 
 									pca_path=NULL, chip_paths=NULL){
 			if(!is.null(hic_path)){
@@ -69,7 +74,7 @@ BrowserData <- R6::R6Class(
 				self$normalizations = strawr::readHicNormTypes(hic_path)
 				self$default_chr = hic_info$name[1]
 				self$default_chr_length = hic_info[self$default_chr, 'length']
-        self$plot_types = c(self$plot_types, 'hic')
+        self$plot_types[['hic']] = 'Hi-C'
 			}
 			if(!is.null(tads_path)){
 				tads = readr::read_tsv(tads_path, col_select=c(1, 2, 3), col_names=FALSE)
@@ -94,19 +99,27 @@ BrowserData <- R6::R6Class(
 			}
 			if(!is.null(chip_paths)){
 				self$chip = read_coldata(bws=chip_paths, build='hg38')
-        self$plot_types = c(self$plot_types, 'chip')
+        self$plot_types[['chip']] = 'ChIP-seq'
 			}
-			gene_data = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
+			genes = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
 			# Rename columns so they don't clash with other variables and are consistent
 			#  with other structures
-			names(gene_data)[names(gene_data) == c('chr', 'start', 'end')] = c('gChr',
+			names(genes)[names(genes) == c('chr', 'start', 'end')] = c('gChr',
 				'gStart', 'gEnd')
-			gene_data$gStart = as.numeric(gene_data$gStart)
-			gene_data$gEnd = as.numeric(gene_data$gEnd)
-			gene_data$width = as.numeric(gene_data$width)
-			gene_data$strand[gene_data$strand=='-1'] = '0'
-			gene_data$strand = as.numeric(gene_data$strand)
-			self$gene_data = gene_data
+      genes = subset(genes, !is.na(gene_biotype))
+			genes$gStart = as.numeric(genes$gStart)
+			genes$gEnd = as.numeric(genes$gEnd)
+			genes$width = as.numeric(genes$width)
+			genes$strand[genes$strand=='-1'] = '0'
+			genes$strand = as.numeric(genes$strand)
+			self$genes = genes
+      biotypes = unique(genes$gene_biotype)
+      feature_counts = c()
+      for(type in biotypes){
+        feature_counts[type] = nrow(subset(self$genes, gene_biotype==type))
+      }
+      self$gene_feature_counts = sort(feature_counts, decreasing=TRUE)
+      self$plot_types[['genes']] = 'Gene Features'
 		}
 	)
 )

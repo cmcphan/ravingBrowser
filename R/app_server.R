@@ -18,7 +18,7 @@ app_server <- function(input, output, session) {
   session$userData$regionChange = FALSE
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
-  for(type in browser_data$plot_types){
+  for(type in names(browser_data$plot_types)){
     assign(paste0(type,'_config'),
       get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1')))
   }
@@ -74,7 +74,7 @@ app_server <- function(input, output, session) {
     for(type in plot_types()){
       shinyjs::addClass(selector='*.shiny-plot-output', class='recalculating')
     }
-		for(type in browser_data$plot_types){
+		for(type in names(browser_data$plot_types)){
       if(type %in% plot_types()){
         # Build plot config
         plot_config = list()

@@ -12,7 +12,7 @@
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
-  plot_types = list('hic'='Hi-C', 'chip'='ChIP-seq')
+  plot_types = browser_data$plot_types
   plot_selections = list()
   for(type in names(plot_types)){
     if(!is.null(browser_data[[type]])){
