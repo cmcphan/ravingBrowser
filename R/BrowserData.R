@@ -112,6 +112,7 @@ BrowserData <- R6::R6Class(
 			genes$width = as.numeric(genes$width)
 			genes$strand[genes$strand=='-1'] = '0'
 			genes$strand = as.numeric(genes$strand)
+      genes$rowId = seq(from=1, to=nrow(genes))
 			self$genes = genes
       biotypes = unique(genes$gene_biotype)
       feature_counts = c()

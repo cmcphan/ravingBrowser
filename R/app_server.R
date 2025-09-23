@@ -8,8 +8,11 @@
 #' @noRd
 app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
-	region = reactive({ region_config(basic_config) })
 	plot_types = basic_config$plot_type_select
+  region = basic_config$region_config
+  observeEvent(basic_config$current_tab(), {
+    region = basic_config$region_config
+  })
 
 	# Initialize session data
 	session$userData$configs = list()
@@ -25,7 +28,7 @@ app_server <- function(input, output, session) {
 
 	# Build dynamic UI
 	observeEvent(plot_types(), {
-    session$userData$region = region()
+    session$userData$region = region()()
 		prev_types = session$userData$plot_types
 		new_selections = plot_types()[!plot_types() %in% prev_types]
 		deselected = prev_types[!prev_types %in% plot_types()]
@@ -59,15 +62,36 @@ app_server <- function(input, output, session) {
 		session$userData$plot_types = plot_types()
   }, ignoreNULL = FALSE )
 
-  observeEvent(region(), {
-    session$userData$region = region()
+  # Having the nested function call like this looks kind of mangled but is the
+  #  only way I could get this to work properly - other configurations either don't
+  #  update reactively or for some reason reset the UI every time they're called
+  observeEvent(region()(), {
+    if(!shiny::isTruthy(region()())){
+      return()
+    }
+    shiny::removeNotification(
+      id = 'region_notif',
+      session = session
+    )
+    session$userData$region = region()()
     session$userData$regionChange = TRUE
-		for(type in plot_types()){
+    for(type in plot_types()){
       get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1'))
-		}
+    }
 	})
 
   observeEvent(basic_config$draw_plots(),{
+    if(!shiny::isTruthy(region()())){
+      shiny::showNotification(
+        'Region is not set. Input a region or select a gene.',
+        duration = NULL,
+        closeButton = FALSE,
+        id = 'region_notif',
+        type = 'error',
+        session = session
+      )
+      return()
+    }
     region_change = session$userData$regionChange
 
     shinycssloaders::showSpinner('plot_ui')
@@ -75,6 +99,7 @@ app_server <- function(input, output, session) {
       shinyjs::addClass(selector='*.shiny-plot-output', class='recalculating')
     }
 		for(type in names(browser_data$plot_types)){
+      print(paste0('Plotting ',type))
       if(type %in% plot_types()){
         # Build plot config
         plot_config = list()
@@ -84,11 +109,11 @@ app_server <- function(input, output, session) {
         # Paint plot if configuration or region has changed
         if(!identical(session$userData$configs[[type]], plot_config) | region_change){
           get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
-            region(), plot_config)
+            region()(), plot_config)
         }
         else{
           get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
-            region(), plot_config, draw=FALSE)
+            region()(), plot_config, draw=FALSE)
         }
         session$userData$configs[[type]] = plot_config
       }
@@ -97,6 +122,7 @@ app_server <- function(input, output, session) {
         get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
           invalidate=TRUE)
       }
+      print(paste0('Finished plotting ',type))
     }
     for(type in plot_types()){
       shinyjs::removeClass(selector='*.shiny-plot-output', class='recalculating')
