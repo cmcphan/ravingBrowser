@@ -6,18 +6,13 @@
 #' @param format A string describing the type of checkbox to build. Options are
 #'  'simple', for initializing with default options, 'advanced', for building
 #'  the full list of options. 
-#' @param session Internal Shiny parameter
-#' @param selected List of currently selected checkbox values. Output from 
-#'  input$gene_features in mod_configure_genes_ui(). If supplied then colourations
-#'  will be added to checkbox names corresponding to plot fill colour for each selected
-#'  type.
 #'
 #' @return A named list with 2 elements - choiceNames and choiceValues, corresponding
 #'  to the respective arguments required by shiny::checkboxGroupInput or its update
 #'  function.
 #'
 #' @noRd
-build_gene_checkbox <- function(format = c('simple', 'advanced'), session){
+build_gene_checkbox <- function(format = c('simple', 'advanced')){
   choiceNames = list()
   choiceValues = list()
   

@@ -11,9 +11,12 @@
 mod_configure_chip_ui <- function(id, session) {
   ns <- NS(id)
 
-  region_width = session$userData$region$region_width
-  if(is.null(region_width)){
+  region = isolate(session$userData$region())
+  if(!shiny::isTruthy(isolate(region()))){
     region_width = browser_data$hic_info[browser_data$default_chr, 'length']-1
+  }
+  else{
+    region_width = isolate(region()$region_width)
   }
   min = as.integer(region_width/2000)
   max = as.integer(region_width/1000)
@@ -43,16 +46,33 @@ mod_configure_chip_ui <- function(id, session) {
 #' configure_chip Server Functions
 #'
 #' @param id Internal Shiny parameter
+#' @param region Reactive function from mod_necessary_setup which details region 
+#'  configuration
 #' @noRd 
-mod_configure_chip_server <- function(id){
+mod_configure_chip_server <- function(id, region){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    region_width = session$userData$region$region_width
-    if(!is.null(region_width)){
+    slider_config = reactive({
+      region = region()
+      if(!shiny::isTruthy(region())){
+        return(NA)
+      }
+      region_width = region()$region_width
       min = as.integer(region_width/2000)
       max = as.integer(region_width/1000)
       step = as.integer((max-min)/100)
+      return( list(min=min, max=max, step=step))
+    })
+    
+    observeEvent(slider_config(), {
+      config = slider_config()
+      if(!shiny::isTruthy(config)){
+        return()
+      }
+      min = config$min
+      max = config$max
+      step = config$step
       updateSliderInput(
         inputId = 'resolution',
         min = min,
@@ -61,7 +81,8 @@ mod_configure_chip_server <- function(id){
         step = step,
         session = session
       )
-    }
+    }, ignoreInit=FALSE)
+      
 
     return(
       list(

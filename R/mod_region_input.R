@@ -158,30 +158,26 @@ mod_region_input_server <- function(id){
 			}
     }, ignoreInit = TRUE)
 
-    region_config = reactive({ 
+    region = reactive({ 
       config = list(
         region_chr = input$region_chr
       )
       # As per shiny.posit.co/r/reference/shiny/latest/actionbutton.html, action
       #  button return values treat 0 as falsy and therefore validations fail on 
       #  initial load. Use is.null to handle initial load.
-      if(is.null(input$toggle_region_size)){
+      if(is.null(input$toggle_region_size) | input$toggle_region_size %% 2 == 0){
         config$region_start = input$region_size_slider[1]
         config$region_end = input$region_size_slider[2]
-      }
-      else if(input$toggle_region_size %% 2 == 1){
-        config$region_start = input$region_size_direct_min
-        config$region_end = input$region_size_direct_max
       }
       else{
-        config$region_start = input$region_size_slider[1]
-        config$region_end = input$region_size_slider[2]
+        config$region_start = input$region_size_direct_min
+        config$region_end = input$region_size_direct_max
       }
       config$region_width = config$region_end - config$region_start
       return(config)
     })
 
-    return( region_config )
+    return( region )
   })
 }
     

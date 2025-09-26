@@ -56,18 +56,12 @@ mod_configure_hic_ui <- function(id, session) {
 #' configure_hic Server Functions
 #'
 #' @param id Internal Shiny parameter
+#' @param region Reactive function from mod_necessary_setup which details region 
+#'  configuration
 #' @noRd 
-mod_configure_hic_server <- function(id){
+mod_configure_hic_server <- function(id, region){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    # This check should not be necessary, but just in case a user manages to break
-    #  the UI somehow, it's handled
-    #message = validate_hic(input$plot_resolution, input$plot_normalization,
-    #  input$plot_format)
-    #if(!is.na(message)){
-    #  shinyFeedback::showFeedbackDanger('draw_plot', session, text=message)
-    #}
-    #else{ shinyFeedback::hideFeedback('draw_plot', session)}
     
  		return( 
       list(

@@ -3,17 +3,19 @@
 #' @description Draw a Hi-C matrix plot according to user-specified configuration.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param elements List of plot elements to include
+#' @param elements Reactive list of plot elements to include from the relevent 
+#'  plot configuration UI server function.
 #'
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
-mod_plot_hic_ui <- function(id, elements) {
+mod_plot_hic_ui <- function(id, elements){
   ns <- NS(id)
+  
   output = tagList(
     plotOutput(ns('hic_track'), height='auto')
   )
-  for(element in elements){
+  for(element in elements()){
     if(element == 'tads'){
       next
     }
@@ -28,108 +30,88 @@ mod_plot_hic_ui <- function(id, elements) {
 #' plot_hic Server Functions
 #'
 #' @param id Internal Shiny parameter
-#' @param region_config A named list of region parameters formed from user
-#'  inputs. Must include the selected chromosome, start and end coordinates
-#'  (in base pairs) of the requested region.
-#' @param plot_config A named list of plot parameters formed from user
-#'  inputs. Must include the selected
-#'  resolution, normalization method and format of the requested Hi-C plot.
-#' @param invalidate Flag which determines whether all plots in this module should be
-#'  replaced with NULL. For clearing plots when configuration has changed/plot is 
-#'  deselected. Defaults to FALSE.
-#' @param draw Flag which determines whether plots should be (re)drawn or not. If
-#'  set to false, just realigns the existing plots with any added since drawing. 
-#'  Defaults to TRUE.
+#' @param basic_config List of reactive functions - output from 
+#'  mod_necessary_setup which details overall configuration settings
+#' @param plot_config Reactive function from the relevant plot UI function which details
+#'  the user selected plot configuration settings
+#' @param current_plots reactiveValues object containing all currently active plots
 #'
 #' @noRd 
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_hic_server <- function(id, region_config, plot_config, 
-  invalidate=FALSE, draw=TRUE){
+mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    if(invalidate){
-      output$hic_track = renderPlot({ NULL }, 
-        res = 96,
-        height=session$clientData$'output_plot_panel_width'*0.1
-      )
-      output$loops_track = renderPlot({ NULL }, 
-        res = 96,
-        height=session$clientData$'output_plot_panel_width'*0.1
-      )
-      output$pca_track = renderPlot({ NULL }, 
-        res = 96,
-        height=session$clientData$'output_plot_panel_width'*0.1
-      )
-      return(NULL)
-    }
+    observeEvent(basic_config$draw_plots(), {
+      current_plots[['hic-hic']] = NULL
+      current_plots[['hic-loops']] = NULL
+      current_plots[['hic-pca']] = NULL
+      if(!('hic' %in% isolate(basic_config$plot_type_select()))){
+        return()
+      }
 
-    if(draw){
-      chr = region_config$region_chr
-      start = as.numeric(region_config$region_start)
-      end = as.numeric(region_config$region_end)
-      resolution = as.numeric(plot_config$resolution)
-      normalization = plot_config$normalization
-      format = plot_config$format
+      region = basic_config$region()
+      if(!shiny::isTruthy(region())){
+        return()
+      }
+      chr = region()$region_chr
+      start = as.numeric(region()$region_start)
+      end = as.numeric(region()$region_end)
+      resolution = as.numeric(plot_config$resolution())
+      normalization = plot_config$normalization()
+      format = plot_config$format()
+      elements = plot_config$elements()
 
-      plots = list()
-      plots[['hic']] = plot_hic(chr, start, end, resolution, normalization, format)
-      if('tads' %in% plot_config$elements){
-        plots[['hic']] = draw_tads(plots[['hic']], chr, start, end)
+      current_plots[['hic-hic']] = plot_hic(chr, start, end, resolution, normalization, format)
+      if('tads' %in% elements){
+        current_plots[['hic-hic']] = draw_tads(current_plots[['hic-hic']], chr, start, end)
       }
-      if('loops' %in% plot_config$elements){
-        plots[['loops']] = plot_loops(chr, start, end)
+      if('loops' %in% elements){
+        current_plots[['hic-loops']] = plot_loops(chr, start, end)
       }
-      else { plots[['loops']] = NULL }
-      if('pca' %in% plot_config$elements){
-        plots[['pca']] = plot_pca(chr, start, end)
+      else { current_plots[['hic-loops']] = NULL }
+      if('pca' %in% elements){
+        current_plots[['hic-pca']] = plot_pca(chr, start, end)
       }
-      else { plots[['pca']] = NULL }
-      session$userData$plots[['hic-hic']] = plots[['hic']]
-      session$userData$plots[['hic-loops']] = plots[['loops']]
-      session$userData$plots[['hic-pca']] = plots[['pca']]
-    }
-    if(length(session$userData$plots) > 0){
-      session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
-        align='v', axis='lr')
-    }
+      else { current_plots[['hic-pca']] = NULL }
+      if(length(current_plots) > 1){
+        plotlist = isolate(reactiveValuesToList(current_plots))
+        aligned_plots = cowplot::align_plots(plotlist=plotlist,
+          align='v', axis='lr')
+        for(name in names(aligned_plots)){
+          current_plots[[name]] = aligned_plots[[name]]
+        }
+      }
+      return()
+    })
+
     # This approach for setting plot height comes from https://github.com/rstudio/
     #  shiny/issues/650, wisdom dispensed by one of the creators of R Shiny. Set
     #  the element height to 'auto' and set the height in the renderPlot call.
     # Output element width, height and visibility can be directly accessed
     #  as part of session$clientData. Output name needs to be namespaced
     output$hic_track = renderPlot({
-      cowplot::ggdraw(session$userData$plots[['hic-hic']])
+      cowplot::ggdraw(current_plots[['hic-hic']])
     },
       res=96,
-      height=session$clientData$'output_plot_panel_width'*0.5
+      height=function(){session$clientData$'output_plot_panel_width'}*0.5
     )
 
     output$loops_track = renderPlot({
-      if('loops' %in% plot_config$elements){
-        cowplot::ggdraw(session$userData$plots[['hic-loops']])
-      }
-      else{
-        NULL
-      }
+      cowplot::ggdraw(current_plots[['hic-loops']])
     },
       res=96,
-      height=session$clientData$'output_plot_panel_width'*0.1
+      height=function(){session$clientData$'output_plot_panel_width'}*0.1
     )
 
     output$pca_track = renderPlot({
-      if('pca' %in% plot_config$elements){
-        cowplot::ggdraw(session$userData$plots[['hic-pca']])
-      }
-      else{
-        NULL
-      }
+      cowplot::ggdraw(current_plots[['hic-pca']])
     },
       res=96,
-      height=session$clientData$'output_plot_panel_width'*0.1
+      height=function(){session$clientData$'output_plot_panel_width'}*0.1
     )
-  })
+  })  
 }
     
 ## To be copied in the UI

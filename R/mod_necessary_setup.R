@@ -49,17 +49,18 @@ mod_necessary_setup_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     
+    region_input = mod_region_input_server("region_input_1")
+    gene_select = mod_gene_select_server("gene_select_1")
+
     inputs = list(
       plot_type_select = reactive({ input$plot_type_select }),
       draw_plots = reactive({ input$draw_plots }),
-      region_config = reactive({ 
+      region = reactive({ 
         if(input$region_select == 'region_input'){
-          return( reactive({ mod_region_input_server("region_input_1") })() )
+          return( region_input  )
         }
         else if(input$region_select == 'gene_select'){
-          # When selected, call the gene select server function to update the 
-          #  selectize input
-          return( reactive({ mod_gene_select_server("gene_select_1") })() )
+          return( gene_select )
         }
       }),
       current_tab = reactive({ input$region_select })

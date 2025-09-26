@@ -11,7 +11,7 @@
 mod_configure_genes_ui <- function(id, session) {
   ns <- NS(id)
 
-  choices = build_gene_checkbox(format='simple', session)
+  choices = build_gene_checkbox(format='simple')
   session$userData$gene_features_values = choices$choiceValues
 
   tagList(
@@ -52,20 +52,23 @@ mod_configure_genes_ui <- function(id, session) {
     
 #' configure_genes Server Functions
 #'
+#' @param id Internal Shiny parameter
+#' @param region Reactive function from mod_necessary_setup which details region 
+#'  configuration
 #' @importFrom shinyjs addClass removeClass
 #' @noRd 
-mod_configure_genes_server <- function(id){
+mod_configure_genes_server <- function(id, region){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
     observeEvent(input$toggle_advanced, {
       if(input$toggle_advanced %% 2 == 0){
-        choices = build_gene_checkbox(format='simple', session)
+        choices = build_gene_checkbox(format='simple')
         buttonLabel = 'Show advanced'
         shinyjs::removeClass(selector='#genesCheckbox', class='multicol')
       }
       else{
-        choices = build_gene_checkbox(format='advanced', session)
+        choices = build_gene_checkbox(format='advanced')
         buttonLabel = 'Hide advanced'
         shinyjs::addClass(selector='#genesCheckbox', class='multicol')
       }

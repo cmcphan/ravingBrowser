@@ -3,14 +3,15 @@
 #' @description Draw a gene feature plot according to user-specified configuration.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param elements List of feature types to be included.
+#' @param elements Reactive list of plot elements to include from the relevent 
+#'  plot configuration UI server function.
 #'
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
 mod_plot_genes_ui <- function(id, elements) {
   ns <- NS(id)
-  if(!is.null(elements)){
+  if(!is.null(elements())){
     tagList(
       plotOutput(ns('gene_track'), height='auto')
     )
@@ -19,52 +20,51 @@ mod_plot_genes_ui <- function(id, elements) {
     
 #' plot_genes Server Functions
 #'
-#' @param region_config A named list of region parameters formed from user
-#'  inputs. Must include the selected chromosome, start and end coordinates
-#'  (in base pairs) of the requested region.
-#' @param plot_config A named list of plot parameters formed from user
-#'  inputs.
-#' @param invalidate Flag which determines whether all plots in this module should be
-#'  replaced with NULL. For clearing plots when configuration has changed/plot is 
-#'  deselected. Defaults to FALSE.
-#' @param draw Flag which determines whether plots should be (re)drawn or not. If
-#'  set to false, just realigns the existing plots with any added since drawing. 
-#'  Defaults to TRUE.
+#' @param id Internal Shiny parameter
+#' @param basic_config List of reactive functions - output from 
+#'  mod_necessary_setup which details overall configuration settings
+#' @param plot_config Reactive function from the relevant plot UI function which details
+#'  the user selected plot configuration settings
+#' @param current_plots reactiveValues object containing all currently active plots
 #' 
 #' @noRd 
-mod_plot_genes_server <- function(id, region_config, plot_config,
-  invalidate=FALSE, draw=TRUE){
+mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
- 
-    if(invalidate){
-      output$gene_track = renderPlot({ NULL },
-        res = 96,
-        height=session$clientData$'output_plot_panel_width'*0.1
-      )
-      session$userData$gene_feature_colours = NULL
-      return(NULL)
-    }
 
-    if(draw){
-      chr = region_config$region_chr
-      start = as.numeric(region_config$region_start)
-      end = as.numeric(region_config$region_end)
-      elements = plot_config$elements
+    observeEvent(basic_config$draw_plots(), {
+      current_plots[['genes-gene_track']] = NULL
+      if(!('genes' %in% isolate(basic_config$plot_type_select()))){
+        return()
+      }
+
+      region = basic_config$region()
+      if(!shiny::isTruthy(region())){
+        return()
+      }
+      chr = region()$region_chr
+      start = as.numeric(region()$region_start)
+      end = as.numeric(region()$region_end)
+      elements = plot_config$elements()
       if(is.null(elements)){ return(NULL) }
-      plot = plot_genes(chr, start, end, elements)
-      session$userData$plots[['genes-gene_track']] = plot
-    }
-    if(length(session$userData$plots) > 0){
-      session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
-        align='v', axis='lr')
-    }
+      current_plots[['genes-gene_track']] = plot_genes(chr, start, end, elements)
+    
+      if(length(current_plots) > 1){
+        plotlist = isolate(reactiveValuesToList(current_plots))
+        aligned_plots = cowplot::align_plots(plotlist=plotlist,
+          align='v', axis='lr')
+        for(name in names(aligned_plots)){
+          current_plots[[name]] = aligned_plots[[name]]
+        }
+      }
+      return()
+    })
 
     output$gene_track = renderPlot({
-      cowplot::ggdraw(session$userData$plots[['genes-gene_track']])
+      cowplot::ggdraw(current_plots[['genes-gene_track']])
     },
       res=96,
-      height=session$clientData$'output_plot_panel_width'*0.1
+      height=function(){session$clientData$'output_plot_panel_width'}*0.1
     )
   })
 }

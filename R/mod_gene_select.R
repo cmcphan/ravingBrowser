@@ -57,7 +57,7 @@ mod_gene_select_server <- function(id){
       )
     )
 
-    region_config = reactive({
+    region = reactive({
       if(input$gene_select == ""){
         return( NA )
       }
@@ -83,7 +83,7 @@ mod_gene_select_server <- function(id){
       return(config)
     })
 
-    return( region_config )
+    return( region )
   })
 }
     

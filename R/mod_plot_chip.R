@@ -3,7 +3,8 @@
 #' @description Draw a ChIP track plot according to user-specified configuration.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param elements List of samples to be included.
+#' @param elements Reactive list of plot elements to include from the relevent 
+#'  plot configuration UI server function.
 #'
 #' @noRd
 #'
@@ -11,7 +12,7 @@
 mod_plot_chip_ui <- function(id, elements) {
   ns <- NS(id)
   output = tagList()
-  for(s in elements){
+  for(s in elements()){
     output = c(output, tagList(
         plotOutput(ns(s), height='auto')
       )
@@ -23,70 +24,61 @@ mod_plot_chip_ui <- function(id, elements) {
 #' plot_chip Server Functions
 #'
 #' @param id Internal Shiny parameter
-#' @param region_config A named list of region parameters formed from user
-#'  inputs. Must include the selected chromosome, start and end coordinates
-#'  (in base pairs) of the requested region.
-#' @param plot_config A named list of plot parameters formed from user
-#'  inputs.
-#' @param invalidate Flag which determines whether all plots in this module should be
-#'  replaced with NULL. For clearing plots when configuration has changed/plot is 
-#'  deselected. Defaults to FALSE.
-#' @param draw Flag which determines whether plots should be (re)drawn or not. If
-#'  set to false, just realigns the existing plots with any added since drawing. 
-#'  Defaults to TRUE.
+#' @param basic_config List of reactive functions - output from 
+#'  mod_necessary_setup which details overall configuration settings
+#' @param plot_config Reactive function from the relevant plot UI function which details
+#'  the user selected plot configuration settings
+#' @param current_plots reactiveValues object containing all currently active plots
 #'
 #' @noRd
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_chip_server <- function(id, region_config, plot_config, 
-  invalidate=FALSE, draw=TRUE){
+mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    if(invalidate){
+    observeEvent(basic_config$draw_plots(), {
       for(s in browser_data$chip$bw_sample_names){
-        output[[s]] = renderPlot({ NULL },
-          res = 96,
-          height=session$clientData$'output_plot_panel_width'*0.1
-        )
+        current_plots[[paste0('chip-',s)]] = NULL
       }
-      return(NULL)
-    }
+      if(!('chip' %in% isolate(basic_config$plot_type_select()))){
+        return()
+      }
 
-    chip_samples = plot_config$elements
-    if(draw){
-      chr = region_config$region_chr
-      start = as.numeric(region_config$region_start)
-      end = as.numeric(region_config$region_end)
-      resolution = plot_config$resolution
+      region = basic_config$region()
+      if(!shiny::isTruthy(region())){
+        return()
+      }
+      chr = region()$region_chr
+      start = as.numeric(region()$region_start)
+      end = as.numeric(region()$region_end)
+      resolution = plot_config$resolution()
+      chip_samples = plot_config$elements()
       plots = plot_chip(chr, start, end, resolution, chip_samples)
       for(s in chip_samples){
-        session$userData$plots[[paste0('chip-',s)]] = plots[[s]]
+        current_plots[[paste0('chip-',s)]] = plots[[s]]
       }
-    }
-    if(length(session$userData$plots) > 0){
-      session$userData$plots = cowplot::align_plots(plotlist=session$userData$plots,
-        align='v', axis='lr')
-    }
+
+      if(length(current_plots) > 1){
+        plotlist = isolate(reactiveValuesToList(current_plots))
+        aligned_plots = cowplot::align_plots(plotlist=plotlist,
+          align='v', axis='lr')
+        for(name in names(aligned_plots)){
+          current_plots[[name]] = aligned_plots[[name]]
+        }
+      }
+      return()
+    })
+
     # Need to use lapply instead of for loop due to the way for loops are handled by
     #  Shiny's lazy evaluation
     lapply(browser_data$chip$bw_sample_names, function(s){
-      if(s %in% chip_samples){
-        output[[s]] = renderPlot({
-          cowplot::ggdraw(session$userData$plots[[paste0('chip-',s)]])
-        },
-          res=96,
-          height=session$clientData$'output_plot_panel_width'*0.1
-        )
-      }
-      else{
-        session$userData$plots[[paste0('chip-',s)]] = NULL
-        output[[s]] = renderPlot({
-          NULL
-        },
-          res = 96,
-          height=session$clientData$'output_plot_panel_width'*0.1)
-      }
+      output[[s]] = renderPlot({
+        cowplot::ggdraw(current_plots[[paste0('chip-',s)]])
+      },
+        res=96,
+        height=function(){session$clientData$'output_plot_panel_width'}*0.1
+      )
     })
   })
 }
