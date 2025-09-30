@@ -9,11 +9,12 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
+#' @importFrom shinycssloaders withSpinner
 mod_plot_genes_ui <- function(id, elements) {
   ns <- NS(id)
   if(!is.null(elements())){
     tagList(
-      plotOutput(ns('gene_track'), height='auto')
+      shinycssloaders::withSpinner(plotOutput(ns('gene_track'), height='auto'))
     )
   }
 }

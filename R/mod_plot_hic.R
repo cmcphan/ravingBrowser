@@ -9,18 +9,19 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
+#' @importFrom shinycssloaders withSpinner
 mod_plot_hic_ui <- function(id, elements){
   ns <- NS(id)
   
   output = tagList(
-    plotOutput(ns('hic_track'), height='auto')
+    shinycssloaders::withSpinner(plotOutput(ns('hic_track'), height='auto'))
   )
   for(element in elements()){
     if(element == 'tads'){
       next
     }
     output = c(output, tagList(
-        plotOutput(ns(paste0(element,'_track')), height='auto')
+        shinycssloaders::withSpinner(plotOutput(ns(paste0(element,'_track')), height='auto'))
       )
     )
   }

@@ -9,10 +9,11 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList plotOutput renderPlot
+#' @importFrom shinycssloaders withSpinner
 mod_plot_chip_ui <- function(id, elements) {
   ns <- NS(id)
   tagList(
-    plotOutput(ns('chip-track'), height='auto')
+    shinycssloaders::withSpinner(plotOutput(ns('chip-track'), height='auto'))
   )
 }
     

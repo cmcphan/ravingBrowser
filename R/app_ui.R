@@ -37,7 +37,7 @@ app_ui <- function(request) {
         mainPanel(
 		      width=9,
 		      plotOutput('plot_panel', height=0), # To get plot output widths
-		      shinycssloaders::withSpinner(uiOutput('plot_ui'))
+		      uiOutput('plot_ui')
 		    )
       )
     )

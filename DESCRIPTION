@@ -1,6 +1,6 @@
 Package: ravingBrowser
 Title: Browser interface for exploring skeletal muscle regulatory elements
-Version: 0.0.3.3
+Version: 0.0.3.3.1
 Authors@R: 
     person("Connor", "McPhan", , "connor.mcphan@uwa.edu.au", role = c("aut", "cre"))
 Description: A web app interface for interactively exploring regulatory
@@ -14,7 +14,15 @@ License: MIT + file LICENSE
 URL: https://github.com/cmcphan/ravingBrowser
 BugReports: https://github.com/cmcphan/ravingBrowser/issues
 Depends: 
-    R (>= 3.5)
+    R (>= 3.5),
+    cowplot,
+    dplyr,
+    gggenes,
+    ggplot2,
+    ggraph,
+    shinycssloaders,
+    tidygraph,
+    usethis
 Imports: 
     config,
     data.table,
