@@ -17,27 +17,31 @@
 #'
 #' @import ggplot2
 plot_chip <- function(chr, start, end, resolution=5000, chip_samples) {
-    if(length(chip_samples) == 0){
-      return(NULL)
-    }
-    chip_query = paste0('chr',chr,':',start,'-',end)
-    bedfile = gen_windows(chr=chr, start=start, end=end, window_size=resolution)
-    bw = subset(browser_data$chip, bw_sample_names %in% chip_samples)
-    chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files)
-    chip_signal_names = bw$bw_sample_names
-    plots = list()
-    for(i in 1:length(chip_signal_names)){
-      clean_signal = subset(chip_signal[[i]], !is.na(max))
-      chip_track = ggplot2::ggplot() +
-        ggplot2::geom_area(ggplot2::aes(x=start, y=max), data=clean_signal) +
-        ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE) +
-        ggplot2::labs(subtitle=bw$bw_sample_names[i]) +
-        ggplot2::theme(panel.background=ggplot2::element_blank(),
-          plot.margin=ggplot2::margin(0, 0, 0, 0),
-          axis.title=ggplot2::element_blank(),
-          axis.ticks.y=ggplot2::element_blank(),
-          axis.text.y=ggplot2::element_blank())
-      plots[[chip_signal_names[i]]] = chip_track
-    }
-    return(plots)
+  if(length(chip_samples) == 0){
+    return(NULL)
+  }
+  chip_query = paste0('chr',chr,':',start,'-',end)
+  bedfile = gen_windows(chr=chr, start=start, end=end, window_size=resolution)
+  bw = subset(browser_data$chip, bw_sample_names %in% chip_samples)
+  chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files)
+  chip_signal_names = bw$bw_sample_names
+  combined_data = data.frame()
+  for(i in 1:length(chip_signal_names)){
+    clean_signal = subset(chip_signal[[i]], !is.na(max))
+    clean_signal$sample = chip_signal_names[i]
+    combined_data = rbind(combined_data, clean_signal)
+  }
+  rm(chip_signal)
+  chip_track = ggplot2::ggplot() +
+    ggplot2::geom_area(ggplot2::aes(x=start, y=max), data=combined_data) +
+    ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE) +
+    ggplot2::theme(panel.background=ggplot2::element_blank(),
+      plot.margin=ggplot2::margin(0, 0, 0, 0),
+      axis.title=ggplot2::element_blank(),
+      axis.ticks.y=ggplot2::element_blank(),
+      axis.text.y=ggplot2::element_blank()) +
+    ggplot2::facet_wrap(vars(sample), nrow=(length(chip_samples)),
+      ncol=1, scales='free_y')
+  rm(combined_data)
+  return(chip_track)
 }

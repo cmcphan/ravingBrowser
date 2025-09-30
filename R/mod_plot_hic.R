@@ -44,10 +44,10 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots){
     ns <- session$ns
 
     observeEvent(basic_config$draw_plots(), {
-      current_plots[['hic-hic']] = NULL
-      current_plots[['hic-loops']] = NULL
-      current_plots[['hic-pca']] = NULL
       if(!('hic' %in% isolate(basic_config$plot_type_select()))){
+        current_plots[['hic-hic']] = NULL
+        current_plots[['hic-loops']] = NULL
+        current_plots[['hic-pca']] = NULL
         return()
       }
 
@@ -75,14 +75,6 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots){
         current_plots[['hic-pca']] = plot_pca(chr, start, end)
       }
       else { current_plots[['hic-pca']] = NULL }
-      if(length(current_plots) > 1){
-        plotlist = isolate(reactiveValuesToList(current_plots))
-        aligned_plots = cowplot::align_plots(plotlist=plotlist,
-          align='v', axis='lr')
-        for(name in names(aligned_plots)){
-          current_plots[[name]] = aligned_plots[[name]]
-        }
-      }
       return()
     })
 

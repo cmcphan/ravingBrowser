@@ -33,8 +33,8 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots){
     ns <- session$ns
 
     observeEvent(basic_config$draw_plots(), {
-      current_plots[['genes-gene_track']] = NULL
       if(!('genes' %in% isolate(basic_config$plot_type_select()))){
+        current_plots[['genes-gene_track']] = NULL
         return()
       }
 

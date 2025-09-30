@@ -60,11 +60,11 @@ read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
 
 gen_windows = function(chr = NA, start, end, window_size = 50, op_dir = getwd()){
   bins = seq(from=start, to=end, by=window_size)
-  window_dat = data.table::data.table(chr=paste0('chr',chr),
+  window_dat = data.table::data.table(chr=paste0("chr",chr),
     start=bins[-length(bins)], end=bins[-1])
   largest_bin = bins[length(bins)]
   if(largest_bin < end){
-      window_dat = rbind(window_dat, data.frame(chr=paste0('chr',chr),
+      window_dat = rbind(window_dat, data.frame(chr=paste0("chr",chr),
         start=largest_bin, end=end))
   }
 

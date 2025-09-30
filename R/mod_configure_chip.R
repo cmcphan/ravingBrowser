@@ -53,26 +53,27 @@ mod_configure_chip_server <- function(id, region){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    slider_config = reactive({
+    #slider_config = reactive({
+    #  region = isolate(region())
+    #  if(!shiny::isTruthy(region())){
+    #    return(NA)
+    #  }
+    #  region_width = region()$region_width
+    #  min = as.integer(region_width/2000)
+    #  max = as.integer(region_width/1000)
+    #  step = as.integer((max-min)/100)
+    #  return( list(min=min, max=max, step=step))
+    #})
+    
+    observeEvent(region()(), {
       region = region()
       if(!shiny::isTruthy(region())){
-        return(NA)
+        return()
       }
       region_width = region()$region_width
       min = as.integer(region_width/2000)
       max = as.integer(region_width/1000)
       step = as.integer((max-min)/100)
-      return( list(min=min, max=max, step=step))
-    })
-    
-    observeEvent(slider_config(), {
-      config = slider_config()
-      if(!shiny::isTruthy(config)){
-        return()
-      }
-      min = config$min
-      max = config$max
-      step = config$step
       updateSliderInput(
         inputId = 'resolution',
         min = min,

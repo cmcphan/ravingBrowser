@@ -67,6 +67,15 @@ app_server <- function(input, output, session) {
   }, ignoreNULL = FALSE )
 
   observeEvent(basic_config$draw_plots(),{
+    if(length(current_plots) > 1){
+      plotlist = isolate(reactiveValuesToList(current_plots))
+      aligned_plots = cowplot::align_plots(plotlist=plotlist,
+        align='v', axis='lr')
+      for(name in names(aligned_plots)){
+        current_plots[[name]] = aligned_plots[[name]]
+      }
+    }
+    
     if(!shiny::isTruthy(region())){
       shiny::showNotification(
         'Region is not set. Input a region or select a gene.',

@@ -11,14 +11,9 @@
 #' @importFrom shiny NS tagList plotOutput renderPlot
 mod_plot_chip_ui <- function(id, elements) {
   ns <- NS(id)
-  output = tagList()
-  for(s in elements()){
-    output = c(output, tagList(
-        plotOutput(ns(s), height='auto')
-      )
-    )
-  }
-  return(output)
+  tagList(
+    plotOutput(ns('chip-track'), height='auto')
+  )
 }
     
 #' plot_chip Server Functions
@@ -37,11 +32,19 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    elements = reactive({ length(plot_config$elements()) })
+
     observeEvent(basic_config$draw_plots(), {
-      for(s in browser_data$chip$bw_sample_names){
-        current_plots[[paste0('chip-',s)]] = NULL
-      }
       if(!('chip' %in% isolate(basic_config$plot_type_select()))){
+        current_plots[['chip-track']] = NULL
+        return()
+      }
+
+      # If this block is not present then repeatedly drawing plots will result
+      #  in severe performance degradation, even if there are no ChIP samples selected
+      chip_samples = plot_config$elements()
+      if(length(chip_samples) == 0){
+        current_plots[['chip-track']] = NULL
         return()
       }
 
@@ -53,33 +56,28 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots){
       start = as.numeric(region()$region_start)
       end = as.numeric(region()$region_end)
       resolution = plot_config$resolution()
-      chip_samples = plot_config$elements()
-      plots = plot_chip(chr, start, end, resolution, chip_samples)
-      for(s in chip_samples){
-        current_plots[[paste0('chip-',s)]] = plots[[s]]
-      }
-
-      if(length(current_plots) > 1){
-        plotlist = isolate(reactiveValuesToList(current_plots))
-        aligned_plots = cowplot::align_plots(plotlist=plotlist,
-          align='v', axis='lr')
-        for(name in names(aligned_plots)){
-          current_plots[[name]] = aligned_plots[[name]]
-        }
-      }
+      current_plots[['chip-track']] = plot_chip(chr, start, end, resolution, chip_samples)
+      #if(length(current_plots) > 1){
+      #  plotlist = isolate(reactiveValuesToList(current_plots))
+      #  aligned_plots = cowplot::align_plots(plotlist=plotlist,
+      #    align='v', axis='lr')
+      #  for(name in names(aligned_plots)){
+      #    current_plots[[name]] = aligned_plots[[name]]
+      #  }
+      #}
       return()
     })
 
-    # Need to use lapply instead of for loop due to the way for loops are handled by
-    #  Shiny's lazy evaluation
-    lapply(browser_data$chip$bw_sample_names, function(s){
-      output[[s]] = renderPlot({
-        cowplot::ggdraw(current_plots[[paste0('chip-',s)]])
-      },
-        res=96,
-        height=function(){session$clientData$'output_plot_panel_width'}*0.1
-      )
-    })
+    output[['chip-track']] = renderPlot({
+      cowplot::ggdraw(current_plots[['chip-track']])
+    },
+      res=96,
+      height=function(){
+        elements = elements()
+        if(elements == 0){ elements = 1 }
+        session$clientData$'output_plot_panel_width'*(0.1*elements)
+      }
+    )
   })
 }
     

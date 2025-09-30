@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
 ## Installation
@@ -25,30 +27,32 @@ ravingBrowser::run_app()
 
 ## About
 
-You are reading the doc about version : 0.0.0.9000
+You are reading the doc about version : 0.0.3.3
 
 This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-08-18 12:55:12 AWST"
+#> [1] "2025-09-30 16:34:07 AWST"
 ```
 
 Here are the tests results and package coverage:
 
 ``` r
 devtools::check(quiet = TRUE)
-#> ══ Documenting ═════════════════════════════════════════════════════════════════
-#> ℹ Installed roxygen2 version (7.3.2) doesn't match required (7.1.1)
-#> ✖ `check()` will not re-document this package
-#> ── R CMD check results ─────────────────────────── ravingBrowser 0.0.0.9000 ────
-#> Duration: 14.2s
+#> ℹ Loading ravingBrowser
+#> ── R CMD check results ─────────────────────────────────────────────── ravingBrowser 0.0.3.3 ────
+#> Duration: 11.9s
 #> 
-#> ❯ checking package subdirectories ... NOTE
-#>   Problems with news in ‘NEWS.md’:
-#>   No news entries found.
+#> ❯ checking package dependencies ... ERROR
+#>   Namespace dependencies missing from DESCRIPTION Imports/Depends entries:
+#>     'cowplot', 'dplyr', 'gggenes', 'ggplot2', 'ggraph',
+#>     'shinycssloaders', 'tidygraph', 'usethis'
+#>   
+#>   See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+#>   manual.
 #> 
-#> 0 errors ✔ | 0 warnings ✔ | 1 note ✖
+#> 1 error ✖ | 0 warnings ✔ | 0 notes ✔
 ```
 
 ``` r
