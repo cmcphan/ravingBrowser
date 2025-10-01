@@ -17,9 +17,6 @@
 #'
 #' @import ggplot2
 plot_chip <- function(chr, start, end, resolution=5000, chip_samples) {
-  if(length(chip_samples) == 0){
-    return(NULL)
-  }
   chip_query = paste0('chr',chr,':',start,'-',end)
   bedfile = gen_windows(chr=chr, start=start, end=end, window_size=resolution)
   bw = subset(browser_data$chip, bw_sample_names %in% chip_samples)

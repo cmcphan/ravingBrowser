@@ -36,11 +36,14 @@ mod_plot_hic_ui <- function(id, elements){
 #' @param plot_config Reactive function from the relevant plot UI function which details
 #'  the user selected plot configuration settings
 #' @param current_plots reactiveValues object containing all currently active plots
+#' @param prev_configs reactiveValues object containing configs for previous plots.
+#'  Used to determine whether the plot needs to be redrawn or not.
 #'
 #' @noRd 
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots){
+mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots, 
+  prev_configs){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -56,26 +59,34 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots){
       if(!shiny::isTruthy(region())){
         return()
       }
-      chr = region()$region_chr
-      start = as.numeric(region()$region_start)
-      end = as.numeric(region()$region_end)
-      resolution = as.numeric(plot_config$resolution())
-      normalization = plot_config$normalization()
-      format = plot_config$format()
-      elements = plot_config$elements()
-
-      current_plots[['hic-hic']] = plot_hic(chr, start, end, resolution, normalization, format)
-      if('tads' %in% elements){
-        current_plots[['hic-hic']] = draw_tads(current_plots[['hic-hic']], chr, start, end)
+      config = list()
+      config$chr = region()$region_chr
+      config$start = as.numeric(region()$region_start)
+      config$end = as.numeric(region()$region_end)
+      config$resolution = as.numeric(plot_config$resolution())
+      config$normalization = plot_config$normalization()
+      config$format = plot_config$format()
+      config$elements = plot_config$elements()
+      if(identical(config, prev_configs[['hic']])){
+        return()
       }
-      if('loops' %in% elements){
-        current_plots[['hic-loops']] = plot_loops(chr, start, end)
+      
+      current_plots[['hic-hic']] = plot_hic(config$chr, config$start, config$end, 
+        config$resolution, config$normalization, config$format)
+      if('tads' %in% config$elements){
+        current_plots[['hic-hic']] = draw_tads(current_plots[['hic-hic']], config$chr, 
+          config$start, config$end)
+      }
+      if('loops' %in% config$elements){
+        current_plots[['hic-loops']] = plot_loops(config$chr, config$start, config$end)
       }
       else { current_plots[['hic-loops']] = NULL }
-      if('pca' %in% elements){
-        current_plots[['hic-pca']] = plot_pca(chr, start, end)
+      if('pca' %in% config$elements){
+        current_plots[['hic-pca']] = plot_pca(config$chr, config$start, config$end)
       }
       else { current_plots[['hic-pca']] = NULL }
+      
+      prev_configs[['hic']] = config
       return()
     })
 

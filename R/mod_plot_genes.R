@@ -27,9 +27,12 @@ mod_plot_genes_ui <- function(id, elements) {
 #' @param plot_config Reactive function from the relevant plot UI function which details
 #'  the user selected plot configuration settings
 #' @param current_plots reactiveValues object containing all currently active plots
+#' @param prev_configs reactiveValues object containing configs for previous plots.
+#'  Used to determine whether the plot needs to be redrawn or not.
 #' 
 #' @noRd 
-mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots){
+mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
+  prev_configs){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -43,21 +46,23 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots){
       if(!shiny::isTruthy(region())){
         return()
       }
-      chr = region()$region_chr
-      start = as.numeric(region()$region_start)
-      end = as.numeric(region()$region_end)
-      elements = plot_config$elements()
-      if(is.null(elements)){ return(NULL) }
-      current_plots[['genes-gene_track']] = plot_genes(chr, start, end, elements)
-    
-      if(length(current_plots) > 1){
-        plotlist = isolate(reactiveValuesToList(current_plots))
-        aligned_plots = cowplot::align_plots(plotlist=plotlist,
-          align='v', axis='lr')
-        for(name in names(aligned_plots)){
-          current_plots[[name]] = aligned_plots[[name]]
-        }
+      config = list()
+      config$chr = region()$region_chr
+      config$start = as.numeric(region()$region_start)
+      config$end = as.numeric(region()$region_end)
+      config$elements = plot_config$elements()
+      if(is.null(config$elements)){ 
+        prev_configs[['genes']] = config
+        return() 
       }
+      if(identical(config, prev_configs[['genes']])){
+        return()
+      }
+      
+      current_plots[['genes-gene_track']] = plot_genes(config$chr, config$start, 
+        config$end, config$elements)
+      
+      prev_configs[['genes']] = config
       return()
     })
 

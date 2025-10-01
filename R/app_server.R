@@ -14,6 +14,7 @@ app_server <- function(input, output, session) {
 	# Initialize session data
 	session$userData$configs = list()
 	current_plots = reactiveValues()
+  prev_configs = reactiveValues()
   session$userData$plot_types = NULL
   session$userData$region = region
   # Build list of server functions to grab plot specific configs
@@ -28,7 +29,7 @@ app_server <- function(input, output, session) {
   #  for some reason so leave it in the for loop
   lapply(names(browser_data$plot_types), function(type){
     get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
-          basic_config, get(paste0(type,'_config')), current_plots)
+          basic_config, get(paste0(type,'_config')), current_plots, prev_configs)
   })
 
 	# Build dynamic UI

@@ -25,11 +25,14 @@ mod_plot_chip_ui <- function(id, elements) {
 #' @param plot_config Reactive function from the relevant plot UI function which details
 #'  the user selected plot configuration settings
 #' @param current_plots reactiveValues object containing all currently active plots
+#' @param prev_configs reactiveValues object containing configs for previous plots.
+#'  Used to determine whether the plot needs to be redrawn or not.
 #'
 #' @noRd
 #'
 #' @importFrom cowplot align_plots ggdraw
-mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots){
+mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
+  prev_configs){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -41,31 +44,28 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots){
         return()
       }
 
-      # If this block is not present then repeatedly drawing plots will result
-      #  in severe performance degradation, even if there are no ChIP samples selected
-      chip_samples = plot_config$elements()
-      if(length(chip_samples) == 0){
-        current_plots[['chip-track']] = NULL
-        return()
-      }
-
       region = basic_config$region()
       if(!shiny::isTruthy(region())){
         return()
       }
-      chr = region()$region_chr
-      start = as.numeric(region()$region_start)
-      end = as.numeric(region()$region_end)
-      resolution = plot_config$resolution()
-      current_plots[['chip-track']] = plot_chip(chr, start, end, resolution, chip_samples)
-      #if(length(current_plots) > 1){
-      #  plotlist = isolate(reactiveValuesToList(current_plots))
-      #  aligned_plots = cowplot::align_plots(plotlist=plotlist,
-      #    align='v', axis='lr')
-      #  for(name in names(aligned_plots)){
-      #    current_plots[[name]] = aligned_plots[[name]]
-      #  }
-      #}
+      config = list()
+      config$chr = region()$region_chr
+      config$start = as.numeric(region()$region_start)
+      config$end = as.numeric(region()$region_end)
+      config$resolution = plot_config$resolution()
+      config$chip_samples = plot_config$elements()
+      if(length(config$chip_samples) == 0){
+        prev_configs[['chip']] = config
+        return()
+      }
+      if(identical(config, prev_configs[['chip']])){
+        return()
+      }
+      
+      current_plots[['chip-track']] = plot_chip(config$chr, config$start, config$end, 
+        config$resolution, config$chip_samples)
+      
+      prev_configs[['chip']] = config
       return()
     })
 
