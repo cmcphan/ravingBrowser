@@ -17,58 +17,58 @@
 #'
 #' @noRd
 clip = function(included_tads, regionStart, regionEnd, segmentSet, format){
-    if(segmentSet == 'left'){
-        included_tads$x = included_tads$tStart
-        included_tads$xend = included_tads$tApex
-        firstTad = included_tads[1,]
-        finalTad = included_tads[nrow(included_tads),]
-        if(format == 'triangular' | format == 'square'){
-            included_tads = subset(included_tads, tStart >= regionStart)
-            if(finalTad$tEnd > regionEnd){
-                finalTad$tEnd = regionEnd
-                finalTad$tDist = regionEnd - finalTad$tStart
-                finalTad$tApex = finalTad$tStart + finalTad$tDist/2
-                included_tads[nrow(included_tads),] = finalTad
-            }
-        }
-        else if(format == 'rectangular'){
-            if(firstTad$tApex > regionStart){
-                # Update the start coordinate to match region limit and do the rest of the work in the geom_segment function call
-                firstTad$x = regionStart
-                included_tads[1,] = firstTad
-            }
-            else{ included_tads = included_tads[-1,] }
-            if(finalTad$tApex > regionEnd){
-                finalTad$xend = regionEnd
-                included_tads[nrow(included_tads),] = finalTad
-            }
-        }
+  if(segmentSet == 'left'){
+    included_tads$x = included_tads$tStart
+    included_tads$xend = included_tads$tApex
+    firstTad = included_tads[1,]
+    finalTad = included_tads[nrow(included_tads),]
+    if(format == 'triangular' | format == 'square'){
+      included_tads = subset(included_tads, tStart >= regionStart)
+      if(nrow(included_tads) > 0 && finalTad$tEnd > regionEnd){
+        finalTad$tEnd = regionEnd
+        finalTad$tDist = regionEnd - finalTad$tStart
+        finalTad$tApex = finalTad$tStart + finalTad$tDist/2
+        included_tads[nrow(included_tads),] = finalTad
+      }
     }
-    else if(segmentSet == 'right'){
-        included_tads$x = included_tads$tApex
-        included_tads$xend = included_tads$tEnd
-        firstTad = included_tads[1,]
-        finalTad = included_tads[nrow(included_tads),]
-        if(format == 'triangular' | format == 'square'){
-            included_tads = subset(included_tads, tEnd <= regionEnd)
-            if(firstTad$tStart < regionStart){
-                firstTad$tStart = regionStart
-                firstTad$tDist = firstTad$tEnd - regionStart
-                firstTad$tApex = firstTad$tEnd - firstTad$tDist/2
-                included_tads[1,] = firstTad
-            }
-        }
-        if(format == 'rectangular'){
-            if(firstTad$tApex < regionStart){
-                firstTad$x = regionStart
-                included_tads[1,] = firstTad
-            }
-            if(finalTad$tApex < regionEnd){
-                finalTad$xend = regionEnd
-                included_tads[nrow(included_tads),] = finalTad
-            }
-            else{ included_tads = included_tads[-nrow(included_tads),] }
-        }
+    else if(format == 'rectangular'){
+      if(firstTad$tApex > regionStart){
+        # Update the start coordinate to match region limit and do the rest of the work in the geom_segment function call
+        firstTad$x = regionStart
+        included_tads[1,] = firstTad
+      }
+      else{ included_tads = included_tads[-1,] }
+      if(finalTad$tApex > regionEnd){
+        finalTad$xend = regionEnd
+        included_tads[nrow(included_tads),] = finalTad
+      }
     }
-    return(included_tads)
+  }
+  else if(segmentSet == 'right'){
+    included_tads$x = included_tads$tApex
+    included_tads$xend = included_tads$tEnd
+    firstTad = included_tads[1,]
+    finalTad = included_tads[nrow(included_tads),]
+    if(format == 'triangular' | format == 'square'){
+      included_tads = subset(included_tads, tEnd <= regionEnd)
+      if(nrow(included_tads) > 0 && firstTad$tStart < regionStart){
+        firstTad$tStart = regionStart
+        firstTad$tDist = firstTad$tEnd - regionStart
+        firstTad$tApex = firstTad$tEnd - firstTad$tDist/2
+        included_tads[1,] = firstTad
+      }
+    }
+    if(format == 'rectangular'){
+      if(firstTad$tApex < regionStart){
+        firstTad$x = regionStart
+        included_tads[1,] = firstTad
+      }
+      if(finalTad$tApex < regionEnd){
+        finalTad$xend = regionEnd
+        included_tads[nrow(included_tads),] = finalTad
+      }
+      else{ included_tads = included_tads[-nrow(included_tads),] }
+    }
+  }
+  return(included_tads)
 }
