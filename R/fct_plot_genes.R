@@ -142,6 +142,7 @@ cascade_genes <- function(genes){
   # Iterate through overlap groups and resolve each of them, then add the resolved data 
   #  frame to genes_cascade
   for(i in 1:length(overlap_group_list)){
+    print(i)
     overlap_group = dplyr::arrange(overlap_group_list[[i]], dplyr::desc(width))
     overlap_group$y_offset = -1
     for(i in 1:nrow(overlap_group)){

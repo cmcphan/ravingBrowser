@@ -130,7 +130,8 @@ BrowserData <- R6::R6Class(
             list(unique(unlist(c(strsplit(ncbi_alias, ';'), strsplit(ensembl_alias,';')))))
           )
         )) %>%
-        dplyr::select(-c('ncbi_alias', 'ensembl_alias'))
+        dplyr::select(-c('ncbi_alias', 'ensembl_alias')) %>%
+        dplyr::ungroup()
       message('Finished')
 			self$genes = genes
       biotypes = unique(genes$gene_biotype)
