@@ -113,6 +113,25 @@ BrowserData <- R6::R6Class(
 			genes$strand[genes$strand=='-1'] = '0'
 			genes$strand = as.numeric(genes$strand)
       genes$rowId = seq(from=1, to=nrow(genes))
+      aliases = list()
+      message('Compiling gene aliases - this may take a while')
+      genes = genes %>% 
+        dplyr::rowwise() %>% 
+        dplyr::mutate(aliases=dplyr::if_else(
+          is.na(ncbi_alias),
+          dplyr::if_else(
+            is.na(ensembl_alias),
+            list('None'),
+            list(unique(unlist(c(strsplit(ensembl_alias, ';')))))
+          ),
+          dplyr::if_else(
+            is.na(ensembl_alias),
+            list(unique(unlist(c(strsplit(ncbi_alias, ';'))))),
+            list(unique(unlist(c(strsplit(ncbi_alias, ';'), strsplit(ensembl_alias,';')))))
+          )
+        )) %>%
+        dplyr::select(-c('ncbi_alias', 'ensembl_alias'))
+      message('Finished')
 			self$genes = genes
       biotypes = unique(genes$gene_biotype)
       feature_counts = c()

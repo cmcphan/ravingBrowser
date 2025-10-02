@@ -6,7 +6,8 @@
 #'
 #' @noRd 
 #'
-#' @importFrom shiny NS tagList tabPanel selectizeInput
+#' @importFrom shiny NS tagList tabPanel selectizeInput verbatimTextOutput
+#' @importFrom shinyjs hidden
 mod_gene_select_ui <- function(id) {
   ns <- NS(id)
   
@@ -19,7 +20,12 @@ mod_gene_select_ui <- function(id) {
           label = 'Search for a gene:',
           choices = NULL,
           multiple = FALSE,
-        )
+        ),
+        shinyjs::hidden(actionButton(
+          inputId = ns('collapse_info'),
+          label = 'Hide gene info'
+        )),
+        htmlOutput(ns('gene_info'))
       )
     ),
     value = 'gene_select',
@@ -31,7 +37,8 @@ mod_gene_select_ui <- function(id) {
 #'
 #' @noRd 
 #' 
-#' @importFrom shiny updateSelectizeInput
+#' @import shiny
+#' @importFrom shinyjs toggle show hide
 mod_gene_select_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
@@ -44,12 +51,13 @@ mod_gene_select_server <- function(id){
       options = list(
         labelField = 'symbol',
         valueField = 'rowId',
-        searchField = c('symbol', 'ensembl', 'gene_name'),
+        searchField = c('symbol', 'ensembl', 'gene_name', 'aliases'),
         render = I(
           '{
             option: function(item, escape) {
               return "<div><strong>" + escape(item.symbol) + "</strong>: " + 
-                escape(item.gene_name) + "</div>"
+                escape(item.gene_name) + escape(" (" + item.aliases + ")") 
+                + "</div>"
             }
           }'),
         maxOptions = 100,
@@ -82,6 +90,52 @@ mod_gene_select_server <- function(id){
       )
       return(config)
     })
+
+    observeEvent(input$gene_select, {
+      if(input$gene_select == ''){
+        shinyjs::hide(id='collapse_info')
+        output$gene_info = NULL
+        return()
+      }
+      shinyjs::show(id='collapse_info')
+      gene = browser_data$genes[input$gene_select,]
+      if(gene$strand == 0){
+        strand = '-ve'
+      }
+      else{
+        strand = '+ve'
+      }
+      name = paste0(toupper(substring(gene$gene_name, 1, 1)),substring(gene$gene_name, 2))
+      uniprot_links = build_links(gene$uniprot, 'uniprot')
+      omim_links = build_links(gene$omim, 'omim')
+      hgnc_links = build_links(gene$hgnc_id, 'hgnc')
+      output$gene_info = renderUI(HTML(paste0(
+        tags$h3(paste0(name,' (',gene$symbol,') ')),
+        tags$p(paste0('Chr ',gene$gChr,' : ',gene$gStart,' - ',gene$gEnd,
+          ' (',strand,' strand)')),
+        tags$p(gene$summary),
+        tags$b('External links'),
+        tags$p('Uniprot entries: ', uniprot_links),
+        tags$p('OMIM entries: ', omim_links),
+        tags$p('HGNC entries: ', hgnc_links)
+      )))
+    })
+
+    observeEvent(input$collapse_info, {
+      shinyjs::toggle(id='gene_info')
+      if(input$collapse_info %% 2 == 0){
+        buttonLabel = 'Hide gene info'
+      }
+      else{
+        buttonLabel = 'Show gene info'
+      }
+      updateActionButton(
+        session = session,
+        inputId = 'collapse_info',
+        label = buttonLabel
+      )
+    })
+    
 
     return( region )
   })

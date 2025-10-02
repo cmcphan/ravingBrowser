@@ -77,7 +77,7 @@ app_server <- function(input, output, session) {
       }
     }
     
-    if(!shiny::isTruthy(region())){
+    if(!shiny::isTruthy(region()())){
       shiny::showNotification(
         'Region is not set. Input a region or select a gene.',
         duration = NULL,
@@ -90,8 +90,8 @@ app_server <- function(input, output, session) {
     }
 	})
 
-  observeEvent(region(), {
-    if(!shiny::isTruthy(region())){
+  observeEvent(region()(), {
+    if(!shiny::isTruthy(region()())){
       return()
     }
     shiny::removeNotification(
