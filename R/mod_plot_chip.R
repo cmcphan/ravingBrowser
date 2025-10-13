@@ -12,9 +12,7 @@
 #' @importFrom shinycssloaders withSpinner
 mod_plot_chip_ui <- function(id, elements) {
   ns <- NS(id)
-  tagList(
-    shinycssloaders::withSpinner(plotOutput(ns('chip-track'), height='auto'))
-  )
+  return(NULL)
 }
     
 #' plot_chip Server Functions
@@ -36,11 +34,18 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    elements = reactive({ length(plot_config$elements()) })
+    # Initialize and set plot order
+    for(s in browser_data$chip$bw_sample_names){
+      current_plots[[paste0("chip-",s)]] = NULL
+    }
 
     observeEvent(basic_config$draw_plots(), {
-      if(!('chip' %in% isolate(basic_config$plot_type_select()))){
-        current_plots[['chip-track']] = NULL
+      if(!("chip" %in% isolate(basic_config$plot_type_select()))){
+        for(s in browser_data$chip$bw_sample_names){
+          current_plots[[paste0("chip-",s)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+          prev_configs[["chip"]]$selected = FALSE
+        }
         return()
       }
 
@@ -54,31 +59,35 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       config$end = as.numeric(region()$region_end)
       config$resolution = plot_config$resolution()
       config$chip_samples = plot_config$elements()
+      config$selected = TRUE
       if(length(config$chip_samples) == 0){
-        prev_configs[['chip']] = config
+        prev_configs[["chip"]] = config
+        for(s in browser_data$chip$bw_sample_names){
+          current_plots[[paste0("chip-",s)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+        }
         return()
       }
-      if(identical(config, prev_configs[['chip']])){
+      if(identical(config, prev_configs[["chip"]])){
         return()
       }
+      # Reset any deselected plots
+      for(s in browser_data$chip$bw_sample_names){
+        if(!(s %in% config$chip_samples)){
+          current_plots[[paste0("chip-",s)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+        }
+      }
       
-      current_plots[['chip-track']] = plot_chip(config$chr, config$start, config$end, 
-        config$resolution, config$chip_samples)
-      
-      prev_configs[['chip']] = config
+      plots = plot_chip(config$chr, config$start, config$end, 
+        config$resolution, config$chip_samples, session)
+      for(s in names(plots)){
+        current_plots[[paste0("chip-",s)]] = plots[[s]]
+      }
+
+      prev_configs[["chip"]] = config
       return()
     })
-
-    output[['chip-track']] = renderPlot({
-      cowplot::ggdraw(current_plots[['chip-track']])
-    },
-      res=96,
-      height=function(){
-        elements = elements()
-        if(elements == 0){ elements = 1 }
-        session$clientData$'output_plot_panel_width'*(0.1*elements)
-      }
-    )
   })
 }
     

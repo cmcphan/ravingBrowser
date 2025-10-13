@@ -6,6 +6,7 @@
 #' @param start,end Integer values representing the start and end coordinates
 #'  (in base pairs) of the region to be plotted.
 #' @param elements List of feature types to include.
+#' @param session Internal Shiny parameter containing session data.
 #'
 #' @return A ggplot2 object displaying gene features for the given genomic region.
 #' 
@@ -13,7 +14,7 @@
 #' @importFrom gggenes geom_gene_arrow geom_gene_label
 #' 
 #' @noRd
-plot_genes <- function(chr, start, end, elements){
+plot_genes <- function(chr, start, end, elements, session){
   included_genes = subset(browser_data$genes, gene_biotype %in% elements)
   included_genes = subset(included_genes, 
     gChr==chr & ((gEnd >= start & gStart <= start) | 
@@ -33,14 +34,18 @@ plot_genes <- function(chr, start, end, elements){
     gggenes::geom_gene_label(align='left') + 
     ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(-max_y-0.5, 0.5), 
       expand=FALSE) + 
-    ggplot2::theme(axis.line.x=ggplot2::element_blank(), 
+    ggplot2::theme(aspect.ratio=0.0225+(0.02*max_y),
+      axis.line.x=ggplot2::element_blank(), 
       axis.ticks.x=ggplot2::element_blank(), 
       axis.text.x=ggplot2::element_blank(), 
       axis.text.y=ggplot2::element_blank(), 
       axis.ticks.y=ggplot2::element_blank(), 
       axis.title.y=ggplot2::element_blank(),
-      #legend.position='none', 
+      legend.title=ggplot2::element_blank(), 
       panel.background=ggplot2::element_blank())
+  session$userData$plot_heights[["genes-gene_track"]] = 0.025+(0.02*max_y)
+  rm(included_genes)
+  rm(genes)
   return(plot)
 }
 
@@ -142,7 +147,6 @@ cascade_genes <- function(genes){
   # Iterate through overlap groups and resolve each of them, then add the resolved data 
   #  frame to genes_cascade
   for(i in 1:length(overlap_group_list)){
-    print(i)
     overlap_group = dplyr::arrange(overlap_group_list[[i]], dplyr::desc(width))
     overlap_group$y_offset = -1
     for(i in 1:nrow(overlap_group)){

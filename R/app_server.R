@@ -17,6 +17,7 @@ app_server <- function(input, output, session) {
   prev_configs = reactiveValues()
   session$userData$plot_types = NULL
   session$userData$region = region
+  session$userData$plot_heights = reactiveValues()
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
   # Call all plot server functions to set up reactivity web
@@ -24,13 +25,16 @@ app_server <- function(input, output, session) {
     assign(paste0(type,'_config'),
       get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1'), region))
   }
+  plot_configs = list()
   # This needs to be done with lapply to avoid lazy evaluation handing the last
   #  plot config to all server functions. The above doesn't work properly with lapply
   #  for some reason so leave it in the for loop
   lapply(names(browser_data$plot_types), function(type){
     get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
           basic_config, get(paste0(type,'_config')), current_plots, prev_configs)
+    plot_configs[[type]] = get(paste0(type,'_config'))
   })
+  mod_plot_server("plot_1", basic_config, current_plots, plot_configs)
 
 	# Build dynamic UI
 	observeEvent(plot_types(), {
@@ -51,32 +55,11 @@ app_server <- function(input, output, session) {
 				}
 			}
 		}
-    
-		output$plot_ui = renderUI({
-			output = tagList()
-			for(type in plot_types()){
-				elements = get(paste0(type,'_config'))$elements
-				output = c(output, tagList(
-						get(paste0('mod_plot_',type,'_ui'))(paste0('plot_',type,'_1'), elements)
-					)
-				)
-			}
-			return(output)
-		})
 
 		session$userData$plot_types = plot_types()
   }, ignoreNULL = FALSE )
 
   observeEvent(basic_config$draw_plots(),{
-    if(length(current_plots) > 1){
-      plotlist = isolate(reactiveValuesToList(current_plots))
-      aligned_plots = cowplot::align_plots(plotlist=plotlist,
-        align='v', axis='lr')
-      for(name in names(aligned_plots)){
-        current_plots[[name]] = aligned_plots[[name]]
-      }
-    }
-    
     if(!shiny::isTruthy(region()())){
       shiny::showNotification(
         'Region is not set. Input a region or select a gene.',

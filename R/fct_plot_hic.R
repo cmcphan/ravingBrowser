@@ -16,13 +16,15 @@
 #'  specified region. May also be 'square', which plots the full symmetrical matrix,
 #'  or 'rectangular', which plots the upper triangle but with additional data
 #'  points filled in from surrounding areas.
+#' @param session Internal Shiny parameter containing session data.
+#' 
 #' @return A HiC contact matrix in the specified format showing interactions within
 #'  the specified region, as a ggplot2 object
 #'
 #' import ggplot2
 #' importFrom strawr straw
 plot_hic <- function(chr, start, end, resolution, normalization='KR',
-                format='triangular'){
+                format='triangular', session){
   hic_path = browser_data$hic
   if(format == 'square'){
     strawr_query = paste(chr,start,end, sep=':')
@@ -42,6 +44,7 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank())
+    session$userData$plot_heights[["hic-hic"]] = 1
   }
   else if(format == 'triangular'){
     range = end-start
@@ -61,25 +64,27 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank())
+    session$userData$plot_heights[["hic-hic"]] = 0.5
   }
   else if(format == 'rectangular'){
-      range = end-start
-      strawr_query = paste(chr,(start-range),(end+range), sep=':')
-      interactions = strawr::straw(normalization, hic_path, strawr_query,
-        strawr_query, 'BP', resolution)
-      interactions$dist = interactions$y - interactions$x
-      plot = ggplot2::ggplot() +
-        ggplot2::geom_rect(ggplot2::aes(xmin=x+(dist/2),
-          xmax=x+(dist/2)+resolution, ymin=dist, ymax=dist+resolution,
-          fill=log2(counts)), data=interactions) +
-        ggplot2::scale_fill_viridis_c() +
-        ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(0, range),
-          expand=FALSE) +
-        ggplot2::theme(aspect.ratio=0.5, panel.background=ggplot2::element_blank(),
-          plot.margin=ggplot2::margin(0, 0, 0, 0),
-          axis.title=ggplot2::element_blank(),
-          axis.ticks.y=ggplot2::element_blank(),
-          axis.text.y=ggplot2::element_blank())
+    range = end-start
+    strawr_query = paste(chr,(start-range),(end+range), sep=':')
+    interactions = strawr::straw(normalization, hic_path, strawr_query,
+      strawr_query, 'BP', resolution)
+    interactions$dist = interactions$y - interactions$x
+    plot = ggplot2::ggplot() +
+      ggplot2::geom_rect(ggplot2::aes(xmin=x+(dist/2),
+        xmax=x+(dist/2)+resolution, ymin=dist, ymax=dist+resolution,
+        fill=log2(counts)), data=interactions) +
+      ggplot2::scale_fill_viridis_c() +
+      ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(0, range),
+        expand=FALSE) +
+      ggplot2::theme(aspect.ratio=0.5, panel.background=ggplot2::element_blank(),
+        plot.margin=ggplot2::margin(0, 0, 0, 0),
+        axis.title=ggplot2::element_blank(),
+        axis.ticks.y=ggplot2::element_blank(),
+        axis.text.y=ggplot2::element_blank())
+    session$userData$plot_heights[["hic-hic"]] = 0.5
   }
   attr(plot, 'format') = format
   return(plot)
@@ -131,6 +136,7 @@ draw_tads <- function(plot, chr, start, end){
         yend=(tEnd-xend)*2), data=clip(included_tads, start, end, 'right',
         format))
   }
+  rm(included_tads)
   return(plot)
 }
 
@@ -140,16 +146,20 @@ draw_tads <- function(plot, chr, start, end){
 #'  arcs. Intended to be plotted alongside a Hi-C contact matrix as an aligned track.
 #'
 #' @param chr,start,end Region parameters describing the bounds of the plot
+#' @param session Internal Shiny parameter containing session data.
 #'
 #' @return A ggplot2 object visualizing loops for the given region
 #'
 #' @import ggplot2
 #' @import ggraph
 #' @importFrom tidygraph tbl_graph
-plot_loops <- function(chr, start, end){
+plot_loops <- function(chr, start, end, session){
   included_cis_loops = subset(browser_data$loops, (lChr1==chr & lChr2==chr) &
                         ((from>=start & to<=start) | (from<=end & to>=end) |
                         (from>=start & to<=end)))[c('from', 'to', 'lDist', 'lPval')]
+  if(nrow(included_cis_loops) == 0){
+    return(NULL)
+  }
   nodes = data.frame(bin = sort(unique(rbind(included_cis_loops$from,
     included_cis_loops$to))))
   edges = data.frame(included_cis_loops)
@@ -165,6 +175,12 @@ plot_loops <- function(chr, start, end){
       base_family='sans') +
     ggplot2::theme(aspect.ratio=0.05) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
+  session$userData$plot_heights[["hic-loops"]] = 0.05
+  rm(included_cis_loops)
+  rm(nodes)
+  rm(edges)
+  rm(loop_graph)
+  rm(loop_layout)
   return(plot)
 }
 
@@ -175,11 +191,12 @@ plot_loops <- function(chr, start, end){
 #'  plotted alongside a Hi-C contact matrix as an aligned track.
 #'
 #' @param chr,start,end Region parameters describing the bounds of the plot
+#' @param session Internal Shiny parameter containing session data.
 #'
 #' @return A ggplot2 object visualizing PCA scores for the given region
 #'
 #' @import ggplot2
-plot_pca <- function(chr, start, end){
+plot_pca <- function(chr, start, end, session){
   included_pca = subset(browser_data$pca, pChr==chr &
     ((pEnd >= start & pStart <= start) | (pStart <= end & pEnd >= end) |
     (pStart >= start & pEnd <= end)))
@@ -206,5 +223,9 @@ plot_pca <- function(chr, start, end){
       axis.title=ggplot2::element_blank(),
       axis.ticks=ggplot2::element_blank(),
       axis.text=ggplot2::element_blank())
+  session$userData$plot_heights[["hic-pca"]] = 0.1
+  rm(included_pca)
+  rm(included_pca_A)
+  rm(included_pca_B)
   return(plot)
 }

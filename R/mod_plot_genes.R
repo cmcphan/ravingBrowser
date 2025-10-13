@@ -12,11 +12,7 @@
 #' @importFrom shinycssloaders withSpinner
 mod_plot_genes_ui <- function(id, elements) {
   ns <- NS(id)
-  if(!is.null(elements())){
-    tagList(
-      shinycssloaders::withSpinner(plotOutput(ns('gene_track'), height='auto'))
-    )
-  }
+  return(NULL)
 }
     
 #' plot_genes Server Functions
@@ -36,9 +32,14 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
+    # Initialize and set plot order
+    current_plots[["genes-gene_track"]] = NULL
+
     observeEvent(basic_config$draw_plots(), {
-      if(!('genes' %in% isolate(basic_config$plot_type_select()))){
-        current_plots[['genes-gene_track']] = NULL
+      if(!("genes" %in% isolate(basic_config$plot_type_select()))){
+        current_plots[["genes-gene_track"]] = NULL
+        session$userData$plot_heights[["genes-gene_track"]] = 0
+        prev_configs[["genes"]]$selected = FALSE
         return()
       }
 
@@ -51,27 +52,21 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       config$start = as.numeric(region()$region_start)
       config$end = as.numeric(region()$region_end)
       config$elements = plot_config$elements()
+      config$selected = TRUE
       if(is.null(config$elements)){ 
-        prev_configs[['genes']] = config
+        prev_configs[["genes"]] = config
         return() 
       }
-      if(identical(config, prev_configs[['genes']])){
+      if(identical(config, prev_configs[["genes"]])){
         return()
       }
       
-      current_plots[['genes-gene_track']] = plot_genes(config$chr, config$start, 
-        config$end, config$elements)
+      current_plots[["genes-gene_track"]] = plot_genes(config$chr, config$start, 
+        config$end, config$elements, session)
       
-      prev_configs[['genes']] = config
+      prev_configs[["genes"]] = config
       return()
     })
-
-    output$gene_track = renderPlot({
-      cowplot::ggdraw(current_plots[['genes-gene_track']])
-    },
-      res=96,
-      height=function(){session$clientData$'output_plot_panel_width'}*0.1
-    )
   })
 }
     

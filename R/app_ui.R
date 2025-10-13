@@ -37,7 +37,7 @@ app_ui <- function(request) {
         mainPanel(
 		      width=9,
 		      plotOutput('plot_panel', height=0), # To get plot output widths
-		      uiOutput('plot_ui')
+		      mod_plot_ui("plot_1")
 		    )
       )
     )
