@@ -54,6 +54,8 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       config$elements = plot_config$elements()
       config$selected = TRUE
       if(is.null(config$elements)){ 
+        current_plots[["genes-gene_track"]] = NULL
+        session$userData$plot_heights[["genes-gene_track"]] = 0
         prev_configs[["genes"]] = config
         return() 
       }

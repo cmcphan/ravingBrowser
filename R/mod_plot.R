@@ -51,26 +51,29 @@ mod_plot_server <- function(id, basic_config, current_plots, plot_configs){
     }, priority = 1)
 
     observeEvent(basic_config$draw_plots(), {
-      if(any(!is.null(current_plots))){
-        plotlist = isolate(reactiveValuesToList(current_plots))
-        plotlist_clean = list()
-        for(p in names(plotlist)){
-          if(!is.null(plotlist[[p]])){
-            plotlist_clean[[p]] = plotlist[[p]]
-          }
+      plotlist = isolate(reactiveValuesToList(current_plots))
+      plotlist_clean = list()
+      for(p in names(plotlist)){
+        if(!is.null(plotlist[[p]])){
+          plotlist_clean[[p]] = plotlist[[p]]
         }
+      }
+      if(length(plotlist_clean) == 0){
+        patchwork_plot(NULL)
+        shinycssloaders::hideSpinner("patchwork")
+      }
+      else if(length(plotlist_clean) == 1){
+        patchwork_plot(plotlist_clean[[1]])
+      }
+      else{
         plot = patchwork::wrap_plots(
           plotlist_clean,
           ncol = 1
         )
         patchwork_plot(plot)
-        rm(plotlist)
-        rm(plotlist_clean)
       }
-      else{
-        patchwork_plot(NULL)
-      }
-      shinycssloaders::hideSpinner("patchwork")
+      rm(plotlist)
+      rm(plotlist_clean)
     }, priority = -1)
 
     output$patchwork = renderPlot({
@@ -79,12 +82,11 @@ mod_plot_server <- function(id, basic_config, current_plots, plot_configs){
       res = 96,
       height = function(){
         height = plot_height()
-        if(height == 0){
-          return(1)
+        if(height == 0 | height <= 0.5){
+          return(session$clientData$"output_plot_panel_width"*0.5)
         }
         else{
-          height = session$clientData$"output_plot_panel_width" * height
-          return(height)
+          return(session$clientData$"output_plot_panel_width" * height)
         }
       }
     )

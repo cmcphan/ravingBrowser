@@ -21,6 +21,10 @@ plot_genes <- function(chr, start, end, elements, session){
     (gStart <= end & gEnd >= end) | 
     (gStart >= start & gEnd <= end))
   )
+  if(nrow(included_genes) == 0){
+    session$userData$plot_heights[["genes-gene_track"]] = 0
+    return(NULL)
+  }
   if(nrow(included_genes) > 1000){
     included_genes = dplyr::arrange(included_genes, desc(width))[1:1000,]
   }
@@ -43,7 +47,14 @@ plot_genes <- function(chr, start, end, elements, session){
       axis.title.y=ggplot2::element_blank(),
       legend.title=ggplot2::element_blank(), 
       panel.background=ggplot2::element_blank())
-  session$userData$plot_heights[["genes-gene_track"]] = 0.025+(0.02*max_y)
+  nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
+  yOffsetAspectRatio = 0.0225+(0.02*max_y)
+  if(yOffsetRatio > nBiotypesRatio){
+    session$userData$plot_heights[["genes-gene_track"]] = yOffsetAspectRatio
+  }
+  else{
+    session$userData$plot_heights[["genes-gene_track"]] = nBiotypesAspectRatio
+  }
   rm(included_genes)
   rm(genes)
   return(plot)
@@ -121,7 +132,7 @@ cascade_genes <- function(genes){
   len = nrow(genes)
   if(len < 2){
     genes$y_offset = 0
-    genes_cascade = rbind(genes_cascade, df)
+    genes_cascade = rbind(genes_cascade, genes)
   }
   overlap_edge = genes[1,]$gEnd
   overlap_group_list = list()
