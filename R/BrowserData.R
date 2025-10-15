@@ -68,23 +68,23 @@ BrowserData <- R6::R6Class(
 				self$hic_chrs = strawr::readHicChroms(hic_path)
 				hic_info = sort_by.data.frame(self$hic_chrs, self$hic_chrs$index)
 				rownames(hic_info) = hic_info$name
-				hic_info = hic_info[(rownames(hic_info) != 'ALL'),]
+				hic_info = hic_info[(rownames(hic_info) != "ALL"),]
 				self$hic_info = hic_info
 				self$resolutions = strawr::readHicBpResolutions(hic_path)
 				self$normalizations = strawr::readHicNormTypes(hic_path)
 				self$default_chr = hic_info$name[1]
-				self$default_chr_length = hic_info[self$default_chr, 'length']
-        self$plot_types[['hic']] = 'Hi-C'
+				self$default_chr_length = hic_info[self$default_chr, "length"]
+        self$plot_types[["hic"]] = "Hi-C"
 			}
 			if(!is.null(tads_path)){
 				tads = readr::read_tsv(tads_path, col_select=c(1, 2, 3), col_names=FALSE)
-				colnames(tads) = c('tChr', 'tStart', 'tEnd')
+				colnames(tads) = c("tChr", "tStart", "tEnd")
 				self$tads = tads
 			}
 			if(!is.null(loops_path)){
 				loops = readr::read_tsv(loops_path, col_names=FALSE)
-				colnames(loops) = c('lChr1', 'lStart1', 'lEnd1', 'lChr2', 'lStart2',
-					'lEnd2', 'lPval')
+				colnames(loops) = c("lChr1", "lStart1", "lEnd1", "lChr2", "lStart2",
+					"lEnd2", "lPval")
 				# Simplify loop coordinates by taking the middle of each bin as our node
 				#  position
 				loops$from = (loops$lEnd1+loops$lStart1)/2
@@ -94,45 +94,49 @@ BrowserData <- R6::R6Class(
 			}
 			if(!is.null(pca_path)){
 				pca = readr::read_tsv(pca_path, col_names=FALSE)
-				colnames(pca) = c('pChr', 'pStart', 'pEnd', 'pScore')
+				colnames(pca) = c("pChr", "pStart", "pEnd", "pScore")
 				self$pca = pca
 			}
 			if(!is.null(chip_paths)){
-				self$chip = read_coldata(bws=chip_paths, build='hg38')
-        self$plot_types[['chip']] = 'ChIP-seq'
+				self$chip = read_coldata(bws=chip_paths, build="hg38")
+        self$plot_types[["chip"]] = "ChIP-seq"
 			}
-			genes = genekitr::genInfo(org='human', hgVersion='v19', unique=TRUE)
-			# Rename columns so they don't clash with other variables and are consistent
+			genes = genekitr::genInfo(org="human", hgVersion="v19", unique=TRUE)
+			# Rename columns so they don"t clash with other variables and are consistent
 			#  with other structures
-			names(genes)[names(genes) == c('chr', 'start', 'end')] = c('gChr',
-				'gStart', 'gEnd')
+			names(genes)[names(genes) == c("chr", "start", "end")] = c("gChr",
+				"gStart", "gEnd")
       genes = subset(genes, !is.na(gene_biotype))
 			genes$gStart = as.numeric(genes$gStart)
 			genes$gEnd = as.numeric(genes$gEnd)
 			genes$width = as.numeric(genes$width)
-			genes$strand[genes$strand=='-1'] = '0'
+			genes$strand[genes$strand=="-1"] = "0"
 			genes$strand = as.numeric(genes$strand)
       genes$rowId = seq(from=1, to=nrow(genes))
+      message("Collapsing gene biotypes")
+      genes$gene_biotype = gsub(".*_pseudogene", "pseudogene", genes$gene_biotype)
+      genes$gene_biotype = gsub(".*_gene", "protein_coding", genes$gene_biotype)
+      genes$gene_biotype = gsub("Mt_.*RNA", "misc_RNA", genes$gene_biotype)
       aliases = list()
-      message('Compiling gene aliases - this may take a while')
+      message("Compiling gene aliases - this may take a while")
       genes = genes %>% 
         dplyr::rowwise() %>% 
         dplyr::mutate(aliases=dplyr::if_else(
           is.na(ncbi_alias),
           dplyr::if_else(
             is.na(ensembl_alias),
-            list('None'),
-            list(unique(unlist(c(strsplit(ensembl_alias, ';')))))
+            list("None"),
+            list(unique(unlist(c(strsplit(ensembl_alias, ";")))))
           ),
           dplyr::if_else(
             is.na(ensembl_alias),
-            list(unique(unlist(c(strsplit(ncbi_alias, ';'))))),
-            list(unique(unlist(c(strsplit(ncbi_alias, ';'), strsplit(ensembl_alias,';')))))
+            list(unique(unlist(c(strsplit(ncbi_alias, ";"))))),
+            list(unique(unlist(c(strsplit(ncbi_alias, ";"), strsplit(ensembl_alias,";")))))
           )
         )) %>%
-        dplyr::select(-c('ncbi_alias', 'ensembl_alias')) %>%
+        dplyr::select(-c("ncbi_alias", "ensembl_alias")) %>%
         dplyr::ungroup()
-      message('Finished')
+      message("Finished")
 			self$genes = genes
       biotypes = unique(genes$gene_biotype)
       feature_counts = c()
@@ -140,7 +144,7 @@ BrowserData <- R6::R6Class(
         feature_counts[type] = nrow(subset(self$genes, gene_biotype==type))
       }
       self$gene_feature_counts = sort(feature_counts, decreasing=TRUE)
-      self$plot_types[['genes']] = 'Gene Features'
+      self$plot_types[["genes"]] = "Gene Features"
 		}
 	)
 )

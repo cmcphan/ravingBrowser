@@ -45,13 +45,13 @@ mod_gene_select_server <- function(id){
 
     updateSelectizeInput(
       session = session, 
-      inputId = 'gene_select', 
+      inputId = "gene_select", 
       choices = browser_data$genes, 
       server = TRUE,
       options = list(
-        labelField = 'symbol',
-        valueField = 'rowId',
-        searchField = c('symbol', 'ensembl', 'gene_name', 'aliases'),
+        labelField = "symbol",
+        valueField = "rowId",
+        searchField = c("symbol", "ensembl", "gene_name", "aliases"),
         render = I(
           '{
             option: function(item, escape) {
@@ -61,7 +61,7 @@ mod_gene_select_server <- function(id){
             }
           }'),
         maxOptions = 100,
-        placeholder = 'Gene symbol, ENSEMBL ID, or gene name'
+        placeholder = "Gene symbol, ENSEMBL ID, or gene name"
       )
     )
 
@@ -79,8 +79,8 @@ mod_gene_select_server <- function(id){
       if(expandedStart < 1){
         expandedStart = 1
       }
-      if(expandedEnd > browser_data$hic_info[chr, 'length']){
-        expandedEnd = browser_data$hic_info[chr, 'length']
+      if(expandedEnd > browser_data$hic_info[chr, "length"]){
+        expandedEnd = browser_data$hic_info[chr, "length"]
       }
       config = list(
         region_chr = chr,
@@ -92,50 +92,58 @@ mod_gene_select_server <- function(id){
     })
 
     observeEvent(input$gene_select, {
-      if(input$gene_select == ''){
-        shinyjs::hide(id='collapse_info')
+      if(input$gene_select == ""){
+        shinyjs::hide(id="collapse_info")
         output$gene_info = NULL
         return()
       }
-      shinyjs::show(id='collapse_info')
+      shinyjs::show(id="collapse_info")
       gene = browser_data$genes[input$gene_select,]
       if(gene$strand == 0){
-        strand = '-ve'
+        strand = "-ve"
       }
       else{
-        strand = '+ve'
+        strand = "+ve"
       }
       name = paste0(toupper(substring(gene$gene_name, 1, 1)),substring(gene$gene_name, 2))
-      uniprot_links = build_links(gene$uniprot, 'uniprot')
-      omim_links = build_links(gene$omim, 'omim')
-      hgnc_links = build_links(gene$hgnc_id, 'hgnc')
+      ncbi_link = build_links(gene$entrezid, "ncbi")
+      genecards_link = build_links(gene$symbol, "genecards")
+      ensembl_link = build_links(gene$ensembl, "ensembl")
+      uniprot_link = build_links(gene$uniprot, "uniprot")
+      omim_link = build_links(gene$omim, "omim")
+      hgnc_link = build_links(gene$hgnc_id, "hgnc")
+      ucsc_link = build_links(gene$ucsc, "ucsc", gene$gChr, gene$gStart, gene$gEnd)
       output$gene_info = renderUI(HTML(paste0(
-        tags$h3(paste0(name,' (',gene$symbol,') ')),
-        tags$p(paste0('Chr ',gene$gChr,' : ',gene$gStart,' - ',gene$gEnd,
-          ' (',strand,' strand)')),
+        tags$h3(paste0(name," (",gene$symbol,") ")),
+        tags$p(paste0("Chr ",gene$gChr," : ",gene$gStart," - ",gene$gEnd,
+          " (",strand," strand)")),
+        tags$p(paste0("GC content: ",gene$gc_content,"%")),
         tags$p(gene$summary),
-        tags$b('External links'),
-        tags$p('Uniprot entries: ', uniprot_links),
-        tags$p('OMIM entries: ', omim_links),
-        tags$p('HGNC entries: ', hgnc_links)
+        tags$b("External links"),
+        tags$p("NCBI entry: ", ncbi_link),
+        tags$p("GeneCards entry: ", genecards_link),
+        tags$p("ENSEMBL entry: ", ensembl_link),
+        tags$p("Uniprot entries: ", uniprot_link),
+        tags$p("OMIM entries: ", omim_link),
+        tags$p("HGNC entry: ", hgnc_link),
+        tags$p("UCSC browser: ", ucsc_link)
       )))
     })
 
     observeEvent(input$collapse_info, {
-      shinyjs::toggle(id='gene_info')
+      shinyjs::toggle(id="gene_info")
       if(input$collapse_info %% 2 == 0){
-        buttonLabel = 'Hide gene info'
+        buttonLabel = "Hide gene info"
       }
       else{
-        buttonLabel = 'Show gene info'
+        buttonLabel = "Show gene info"
       }
       updateActionButton(
         session = session,
-        inputId = 'collapse_info',
+        inputId = "collapse_info",
         label = buttonLabel
       )
     })
-    
 
     return( region )
   })

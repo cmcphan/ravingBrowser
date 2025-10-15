@@ -49,7 +49,7 @@ plot_genes <- function(chr, start, end, elements, session){
       panel.background=ggplot2::element_blank())
   nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
   yOffsetAspectRatio = 0.0225+(0.02*max_y)
-  if(yOffsetRatio > nBiotypesRatio){
+  if(yOffsetAspectRatio > nBiotypesAspectRatio){
     session$userData$plot_heights[["genes-gene_track"]] = yOffsetAspectRatio
   }
   else{
