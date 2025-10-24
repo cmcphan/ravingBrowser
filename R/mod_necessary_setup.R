@@ -8,8 +8,6 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-#' @importFrom shinyjs disabled toggleState
-#' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
   plot_types = browser_data$plot_types
@@ -48,23 +46,15 @@ mod_necessary_setup_ui <- function(id) {
 mod_necessary_setup_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    
-    region_input = mod_region_input_server("region_input_1")
-    gene_select = mod_gene_select_server("gene_select_1")
 
     inputs = list(
       plot_type_select = reactive({ input$plot_type_select }),
       draw_plots = reactive({ input$draw_plots }),
-      region = reactive({ 
-        if(input$region_select == 'region_input'){
-          return( region_input  )
-        }
-        else if(input$region_select == 'gene_select'){
-          return( gene_select )
-        }
-      }),
       current_tab = reactive({ input$region_select })
     )
+
+    mod_region_input_server("region_input_1")
+    mod_gene_select_server("gene_select_1")
 
     return( inputs )
   })

@@ -59,7 +59,7 @@ mod_configure_hic_ui <- function(id, session) {
 #' @param region Reactive function from mod_necessary_setup which details region 
 #'  configuration
 #' @noRd 
-mod_configure_hic_server <- function(id, region){
+mod_configure_hic_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
     

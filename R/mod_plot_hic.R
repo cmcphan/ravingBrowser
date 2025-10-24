@@ -25,12 +25,14 @@ mod_plot_hic_ui <- function(id, elements){
 #' @param current_plots reactiveValues object containing all currently active plots
 #' @param prev_configs reactiveValues object containing configs for previous plots.
 #'  Used to determine whether the plot needs to be redrawn or not.
+#' @param toolbar_config List of reactive functions - output from mod_toolbar which
+#'  contains toolbar button data
 #'
 #' @noRd 
 #'
 #' @importFrom cowplot align_plots ggdraw
 mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots, 
-  prev_configs){
+  prev_configs, toolbar_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -39,35 +41,25 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
     current_plots[["hic-loops"]] = NULL
     current_plots[["hic-pca"]] = NULL
 
-    observeEvent(basic_config$draw_plots(), {
-      if(!('hic' %in% isolate(basic_config$plot_type_select()))){
-        current_plots[["hic-hic"]] = NULL
-        session$userData$plot_heights[["hic-hic"]] = 0
-        current_plots[["hic-loops"]] = NULL
-        session$userData$plot_heights[["hic-loops"]] = 0
-        current_plots[["hic-pca"]] = NULL
-        session$userData$plot_heights[["hic-pca"]] = 0
-        prev_configs[["hic"]]$selected = FALSE
+    config = reactiveValues()
+    build_config = function(){
+      region = session$userData$region()
+      if(!shiny::isTruthy(region)){
+        config = reactiveValues()
         return()
       }
-
-      region = basic_config$region()
-      if(!shiny::isTruthy(region())){
-        return()
-      }
-      config = list()
-      config$chr = region()$region_chr
-      config$start = as.numeric(region()$region_start)
-      config$end = as.numeric(region()$region_end)
+      config$chr = region$chr
+      config$start = as.numeric(region$start)
+      config$end = as.numeric(region$end)
       config$resolution = as.numeric(plot_config$resolution())
       config$normalization = plot_config$normalization()
       config$format = plot_config$format()
       config$elements = plot_config$elements()
       config$selected = TRUE
-      if(identical(config, prev_configs[["hic"]])){
-        return()
-      }
-      
+      return(config)
+    }
+
+    draw_plots = function(config){
       current_plots[["hic-hic"]] = plot_hic(config$chr, config$start, config$end, 
         config$resolution, config$normalization, config$format, session)
       if("tads" %in% config$elements){
@@ -90,8 +82,73 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
         current_plots[["hic-pca"]] = NULL
         session$userData$plot_heights[["hic-pca"]] = 0
       }
+    }
+
+    observeEvent(basic_config$draw_plots(), {
+      if(!('hic' %in% isolate(basic_config$plot_type_select()))){
+        current_plots[["hic-hic"]] = NULL
+        session$userData$plot_heights[["hic-hic"]] = 0
+        current_plots[["hic-loops"]] = NULL
+        session$userData$plot_heights[["hic-loops"]] = 0
+        current_plots[["hic-pca"]] = NULL
+        session$userData$plot_heights[["hic-pca"]] = 0
+        prev_configs[["hic"]]$selected = FALSE
+        return()
+      }
+
+      config = build_config()
+      if(identical(reactiveValuesToList(config), prev_configs[["hic"]])){
+        return()
+      }
       
-      prev_configs[["hic"]] = config
+      draw_plots(config)
+      prev_configs[["hic"]] = reactiveValuesToList(config)
+      return()
+    })
+
+    observeEvent(toolbar_config$zoom_in(), {
+      if(length(reactiveValuesToList(config)) == 0){
+        return()
+      }
+      zoomed_region = zoom(config$chr, config$start, config$end, "in")
+      if(zoomed_region$width <= 1){
+        return()
+      }
+      config$start = zoomed_region$start
+      config$end = zoomed_region$end
+      draw_plots(config)
+      prev_configs[["hic"]] = reactiveValuesToList(config)
+      return()
+    })
+
+    observeEvent(toolbar_config$zoom_out(), {
+      if(length(reactiveValuesToList(config)) == 0){
+        return()
+      }
+      zoomed_region = zoom(config$chr, config$start, config$end, "out")
+      if(config$start == zoomed_region$start & config$end == zoomed_region$end){
+        return()
+      }
+      config$start = zoomed_region$start
+      config$end = zoomed_region$end
+      draw_plots(config)
+      prev_configs[["hic"]] = reactiveValuesToList(config)
+      return()
+    })
+
+    observeEvent(toolbar_config$update_plots(), {
+      if(length(reactiveValuesToList(config)) == 0){
+        return()
+      }
+      chr = config$chr
+      start = config$start
+      end = config$end
+      config = build_config()
+      config$chr = chr
+      config$start = start
+      config$end = end
+      draw_plots(config)
+      prev_configs[["hic"]] = reactiveValuesToList(config)
       return()
     })
   })  

@@ -8,6 +8,7 @@
 #' @noRd
 app_server <- function(input, output, session) {
 	basic_config = mod_necessary_setup_server("necessary_setup_1")
+  toolbar_config = mod_toolbar_server("toolbar_1")
 	plot_types = basic_config$plot_type_select
   region = basic_config$region
 
@@ -15,15 +16,17 @@ app_server <- function(input, output, session) {
 	session$userData$configs = list()
 	current_plots = reactiveValues()
   prev_configs = reactiveValues()
+  session$userData$patchwork_plot = reactiveVal(NULL)
   session$userData$plot_types = NULL
-  session$userData$region = region
+  session$userData$region = reactiveVal(NULL)
   session$userData$plot_heights = reactiveValues()
+  
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
   # Call all plot server functions to set up reactivity web
   for(type in names(browser_data$plot_types)){
     assign(paste0(type,'_config'),
-      get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1'), region))
+      get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1')))
   }
   plot_configs = list()
   # This needs to be done with lapply to avoid lazy evaluation handing the last
@@ -31,10 +34,11 @@ app_server <- function(input, output, session) {
   #  for some reason so leave it in the for loop
   lapply(names(browser_data$plot_types), function(type){
     get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
-          basic_config, get(paste0(type,'_config')), current_plots, prev_configs)
+          basic_config, get(paste0(type,'_config')), current_plots, 
+          prev_configs, toolbar_config)
     plot_configs[[type]] = get(paste0(type,'_config'))
   })
-  mod_plot_server("plot_1", basic_config, current_plots, plot_configs)
+  mod_plot_server("plot_1", basic_config, current_plots, plot_configs, toolbar_config)
 
 	# Build dynamic UI
 	observeEvent(plot_types(), {
@@ -60,7 +64,7 @@ app_server <- function(input, output, session) {
   }, ignoreNULL = FALSE )
 
   observeEvent(basic_config$draw_plots(),{
-    if(!shiny::isTruthy(region()())){
+    if(!shiny::isTruthy(session$userData$region())){
       shiny::showNotification(
         'Region is not set. Input a region or select a gene.',
         duration = NULL,
@@ -73,14 +77,13 @@ app_server <- function(input, output, session) {
     }
 	})
 
-  observeEvent(region()(), {
-    if(!shiny::isTruthy(region()())){
+  observeEvent(session$userData$region, {
+    if(!shiny::isTruthy(session$userData$region())){
       return()
     }
     shiny::removeNotification(
       id = 'region_notif',
       session = session
     )
-    session$userData$region = region
 	})
 }

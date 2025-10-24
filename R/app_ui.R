@@ -31,12 +31,12 @@ app_ui <- function(request) {
         sidebarPanel(
           width=3,
           tags$h1("RAVING Browser"),
-          mod_necessary_setup_ui("necessary_setup_1"),
-          uiOutput("controls")
+          mod_necessary_setup_ui("necessary_setup_1")
         ),
         mainPanel(
 		      width=9,
-		      plotOutput('plot_panel', height=0), # To get plot output widths
+		      plotOutput("plot_panel", height=0), # To get plot output widths
+          mod_toolbar_ui("toolbar_1"),
 		      mod_plot_ui("plot_1")
 		    )
       )

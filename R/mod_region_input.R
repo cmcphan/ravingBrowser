@@ -59,7 +59,7 @@ mod_region_input_ui <- function(id) {
 }
     
 #' region_input Server Functions
-#'
+#' 
 #' @importFrom shinyjs toggleState
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 #' @noRd 
@@ -160,21 +160,26 @@ mod_region_input_server <- function(id){
 
     region = reactive({ 
       config = list(
-        region_chr = input$region_chr
+        chr = input$region_chr
       )
       # As per shiny.posit.co/r/reference/shiny/latest/actionbutton.html, action
       #  button return values treat 0 as falsy and therefore validations fail on 
       #  initial load. Use is.null to handle initial load.
       if(is.null(input$toggle_region_size) | input$toggle_region_size %% 2 == 0){
-        config$region_start = input$region_size_slider[1]
-        config$region_end = input$region_size_slider[2]
+        config$start = input$region_size_slider[1]
+        config$end = input$region_size_slider[2]
       }
       else{
-        config$region_start = input$region_size_direct_min
-        config$region_end = input$region_size_direct_max
+        config$start = input$region_size_direct_min
+        config$end = input$region_size_direct_max
       }
-      config$region_width = config$region_end - config$region_start
+      config$width = config$end - config$start
       return(config)
+    })
+
+    observeEvent(region(), {
+      region = region()
+      session$userData$region(region)
     })
 
     return( region )

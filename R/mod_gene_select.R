@@ -34,7 +34,7 @@ mod_gene_select_ui <- function(id) {
 }
     
 #' gene_select Server Functions
-#'
+#' 
 #' @noRd 
 #' 
 #' @import shiny
@@ -83,10 +83,10 @@ mod_gene_select_server <- function(id){
         expandedEnd = browser_data$hic_info[chr, "length"]
       }
       config = list(
-        region_chr = chr,
-        region_start = expandedStart,
-        region_end = expandedEnd,
-        region_width = expandedEnd-expandedStart
+        chr = chr,
+        start = expandedStart,
+        end = expandedEnd,
+        width = expandedEnd-expandedStart
       )
       return(config)
     })
@@ -128,6 +128,8 @@ mod_gene_select_server <- function(id){
         tags$p("HGNC entry: ", hgnc_link),
         tags$p("UCSC browser: ", ucsc_link)
       )))
+      region = region()
+      session$userData$region(region) 
     })
 
     observeEvent(input$collapse_info, {
@@ -144,8 +146,6 @@ mod_gene_select_server <- function(id){
         label = buttonLabel
       )
     })
-
-    return( region )
   })
 }
     

@@ -56,14 +56,13 @@ mod_configure_genes_ui <- function(id, session) {
   )
 }
     
-#" configure_genes Server Functions
-#"
-#" @param id Internal Shiny parameter
-#" @param region Reactive function from mod_necessary_setup which details region 
-#"  configuration
-#" @importFrom shinyjs addClass removeClass
-#" @noRd 
-mod_configure_genes_server <- function(id, region){
+#' configure_genes Server Functions
+#'
+#' @param id Internal Shiny parameter
+#'
+#' @importFrom shinyjs addClass removeClass
+#' @noRd 
+mod_configure_genes_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
