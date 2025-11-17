@@ -28,7 +28,8 @@ mod_toolbar_ui <- function(id) {
         ns("toggle_alignment_bar"),
         label = "Toggle alignment bar",
         class = "toolbar-button",
-        icon = shiny::icon("bong") # "sort"
+        icon = shiny::icon("sort"),
+        onclick = "dragElement()"
       ),
       shiny::actionButton(
         ns("toggle_brush"),

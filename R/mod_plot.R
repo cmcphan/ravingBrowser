@@ -12,7 +12,12 @@
 mod_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto'))
+    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto')),
+    tags$div(id=ns("alignment_bar"), class="alignment_bar",
+      tags$div(id=ns("alignment_bar_padding_left"), class="alignment_bar_padding"),
+      tags$div(id=ns("alignment_bar_line"), class="alignment_bar_line"),
+      tags$div(id=ns("alignment_bar_padding_right"), class="alignment_bar_padding")
+    )
   )
 }
     
@@ -94,10 +99,6 @@ toolbar_config){
         }
       }
     )
-
-    observeEvent(toolbar_config$toggle_alignment_bar(), {
-      print("Alignment bar toggled")
-    })
 
     observeEvent(toolbar_config$toggle_brush(), {
       print("Brush toggled")
