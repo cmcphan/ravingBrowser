@@ -85,6 +85,9 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
     }
 
     observeEvent(basic_config$draw_plots(), {
+      if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
       if(!('hic' %in% isolate(basic_config$plot_type_select()))){
         current_plots[["hic-hic"]] = NULL
         session$userData$plot_heights[["hic-hic"]] = 0

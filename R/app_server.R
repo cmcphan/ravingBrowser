@@ -77,7 +77,7 @@ app_server <- function(input, output, session) {
     }
 	})
 
-  observeEvent(session$userData$region, {
+  observeEvent(session$userData$region(), {
     if(!shiny::isTruthy(session$userData$region())){
       return()
     }

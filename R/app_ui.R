@@ -13,42 +13,6 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     shinyjs::useShinyjs(),
     shinyFeedback::useShinyFeedback(),
-    # This multicol CSS class comes from
-    #  https://stackoverflow.com/questions/29738975/
-    #  how-to-align-a-group-of-checkboxgroupinput-in-r-shiny
-    tags$head(
-      tags$style(HTML("
-        .multicol { 
-          -webkit-column-count: 2; /* Chrome, Safari, Opera */ 
-          -moz-column-count: 2;    /* Firefox */ 
-          column-count: 2; 
-          -moz-column-fill: auto;
-          -column-fill: auto;
-        } 
-        .alignment_bar {
-          display: grid;
-          grid-template-columns: 25px 2px 25px;
-          height: 100%;
-          position: absolute;
-          left: 50%;
-          top: 34px;
-          visibility: hidden;
-          z-index: 2;
-          cursor: ew-resize;
-        }
-        .alignment_bar_line {
-          border-left: 2px dashed black;
-          height: 100%;
-          width: 100%;
-          z-index: 3;
-        }
-        .alignment_bar_padding {
-          opacity: 0;
-          height: 100%;
-          width: 100%;
-        }")
-      )
-    ),
     # UI logic
     fluidPage(
       sidebarLayout(

@@ -10,7 +10,8 @@ plot_hic(
   end,
   resolution,
   normalization = "KR",
-  format = "triangular"
+  format = "triangular",
+  session
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ underlying data.}
 specified region. May also be 'square', which plots the full symmetrical matrix,
 or 'rectangular', which plots the upper triangle but with additional data
 points filled in from surrounding areas.}
+
+\item{session}{Internal Shiny parameter containing session data.}
 }
 \value{
 A HiC contact matrix in the specified format showing interactions within

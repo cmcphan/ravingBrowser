@@ -4,10 +4,12 @@
 \alias{plot_pca}
 \title{Draw PCA ribbon}
 \usage{
-plot_pca(chr, start, end)
+plot_pca(chr, start, end, session)
 }
 \arguments{
 \item{chr, start, end}{Region parameters describing the bounds of the plot}
+
+\item{session}{Internal Shiny parameter containing session data.}
 }
 \value{
 A ggplot2 object visualizing PCA scores for the given region

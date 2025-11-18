@@ -84,6 +84,9 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
 
     plotted_region = reactiveVal(NULL)
     observeEvent(basic_config$draw_plots(), {
+      if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
         for(s in browser_data$chip$bw_sample_names){
           current_plots[[paste0("chip-",s)]] = NULL

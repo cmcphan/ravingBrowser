@@ -58,6 +58,9 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
     }
 
     observeEvent(basic_config$draw_plots(), {
+      if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
       if(!("genes" %in% isolate(basic_config$plot_type_select()))){
         current_plots[["genes-gene_track"]] = NULL
         session$userData$plot_heights[["genes-gene_track"]] = 0

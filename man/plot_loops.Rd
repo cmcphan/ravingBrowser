@@ -4,10 +4,12 @@
 \alias{plot_loops}
 \title{Draw arc representation of loops}
 \usage{
-plot_loops(chr, start, end)
+plot_loops(chr, start, end, session)
 }
 \arguments{
 \item{chr, start, end}{Region parameters describing the bounds of the plot}
+
+\item{session}{Internal Shiny parameter containing session data.}
 }
 \value{
 A ggplot2 object visualizing loops for the given region

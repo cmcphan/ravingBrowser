@@ -53,8 +53,8 @@ mod_necessary_setup_server <- function(id){
       current_tab = reactive({ input$region_select })
     )
 
-    mod_region_input_server("region_input_1")
-    mod_gene_select_server("gene_select_1")
+    mod_region_input_server("region_input_1", inputs$current_tab)
+    mod_gene_select_server("gene_select_1", inputs$current_tab)
 
     return( inputs )
   })

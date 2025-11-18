@@ -35,11 +35,14 @@ mod_gene_select_ui <- function(id) {
     
 #' gene_select Server Functions
 #' 
+#' @param current_tab Reactive function that gets the currently active tab from
+#'  mod_necessary_setup
+#'
 #' @noRd 
 #' 
 #' @import shiny
 #' @importFrom shinyjs toggle show hide
-mod_gene_select_server <- function(id){
+mod_gene_select_server <- function(id, current_tab){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -67,7 +70,7 @@ mod_gene_select_server <- function(id){
 
     region = reactive({
       if(input$gene_select == ""){
-        return( NA )
+        return( list(config=NA, current_tab=current_tab()) )
       }
       gene = browser_data$genes[input$gene_select,]
       start = gene$gStart
@@ -86,15 +89,21 @@ mod_gene_select_server <- function(id){
         chr = chr,
         start = expandedStart,
         end = expandedEnd,
-        width = expandedEnd-expandedStart
+        width = expandedEnd-expandedStart,
+        current_tab = current_tab()
       )
       return(config)
     })
 
-    observeEvent(input$gene_select, {
+    observeEvent(region(), {
+      region = region()
+      if(region$current_tab != "gene_select"){
+        return()
+      }
       if(input$gene_select == ""){
         shinyjs::hide(id="collapse_info")
         output$gene_info = NULL
+        session$userData$region(NULL)
         return()
       }
       shinyjs::show(id="collapse_info")
@@ -128,7 +137,6 @@ mod_gene_select_server <- function(id){
         tags$p("HGNC entry: ", hgnc_link),
         tags$p("UCSC browser: ", ucsc_link)
       )))
-      region = region()
       session$userData$region(region) 
     })
 

@@ -60,10 +60,13 @@ mod_region_input_ui <- function(id) {
     
 #' region_input Server Functions
 #' 
+#' @param current_tab Reactive function that gets the currently active tab from
+#'  mod_necessary_setup
+#' 
 #' @importFrom shinyjs toggleState
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 #' @noRd 
-mod_region_input_server <- function(id){
+mod_region_input_server <- function(id, current_tab){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
  
@@ -174,13 +177,17 @@ mod_region_input_server <- function(id){
         config$end = input$region_size_direct_max
       }
       config$width = config$end - config$start
+      config$current_tab = current_tab()
       return(config)
     })
 
     observeEvent(region(), {
       region = region()
+      if(region$current_tab != "region_input"){
+        return()
+      }
       session$userData$region(region)
-    })
+    }, ignoreInit=FALSE)
 
     return( region )
   })

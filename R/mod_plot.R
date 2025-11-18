@@ -9,10 +9,12 @@
 #'
 #' @importFrom shiny NS tagList
 #' @importFrom shinycssloaders withSpinner 
+#' @importFrom patchwork wrap_plots patchworkGrob
 mod_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto')),
+    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto',
+      brush=brushOpts(id=ns("plot_brush"), direction="x", resetOnNew=TRUE))),
     tags$div(id=ns("alignment_bar"), class="alignment_bar",
       tags$div(id=ns("alignment_bar_padding_left"), class="alignment_bar_padding"),
       tags$div(id=ns("alignment_bar_line"), class="alignment_bar_line"),
@@ -39,6 +41,7 @@ mod_plot_ui <- function(id) {
 #' @importFrom shinycssloaders showSpinner hideSpinner
 #' @importFrom patchwork wrap_plots
 #' @importFrom shinyjs addClass removeClass
+#' @importFrom ggplotify as.ggplot
 mod_plot_server <- function(id, basic_config, current_plots, plot_configs, 
 toolbar_config){
   moduleServer(id, function(input, output, session){
@@ -54,12 +57,18 @@ toolbar_config){
 
     observeEvent({basic_config$draw_plots() | toolbar_config$zoom_in() |
       toolbar_config$zoom_out() | toolbar_config$update_plots()}, {
+      if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
       shinycssloaders::showSpinner("patchwork")
       shinyjs::addClass(selector="#plot_1-patchwork", class="recalculating")
     }, priority = 1)
 
     observeEvent({basic_config$draw_plots() | toolbar_config$zoom_in() |
       toolbar_config$zoom_out() | toolbar_config$update_plots()}, {
+      if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
       plotlist = isolate(reactiveValuesToList(current_plots))
       plotlist_clean = list()
       for(p in names(plotlist)){
@@ -79,6 +88,7 @@ toolbar_config){
           plotlist_clean,
           ncol = 1
         )
+        #attr(plot, "class") = c("ggplot", "patchwork")
         session$userData$patchwork_plot(plot)
       }
       rm(plotlist)
@@ -86,7 +96,15 @@ toolbar_config){
     }, priority = -1)
 
     output$patchwork = renderPlot({
-      session$userData$patchwork_plot()
+      plot = session$userData$patchwork_plot()
+      if("patchwork" %in% attr(plot, "class")){
+        plot = patchwork::patchworkGrob(plot)
+        plot = ggplotify::as.ggplot(plot)
+        plot
+      }
+      else{
+        plot
+      }
     }, 
       res = 96,
       height = function(){
@@ -102,6 +120,10 @@ toolbar_config){
 
     observeEvent(toolbar_config$toggle_brush(), {
       print("Brush toggled")
+    })
+
+    observeEvent(input$plot_brush, {
+      print(paste0("Min = ",input$plot_brush$xmin, ", max = ",input$plot_brush$xmax))
     })
   })
 }
