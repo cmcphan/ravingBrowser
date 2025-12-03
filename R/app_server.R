@@ -7,11 +7,14 @@
 #' @importFrom shinyjs addClass removeClass
 #' @noRd
 app_server <- function(input, output, session) {
-	basic_config = mod_necessary_setup_server("necessary_setup_1")
+	# Given that these are all passed through to each of the plotting functions,
+  #  it would probably be more efficient to set these up inside of a single R6 
+  #  object and just pass that through instead
+  basic_config = mod_necessary_setup_server("necessary_setup_1")
   toolbar_config = mod_toolbar_server("toolbar_1")
 	plot_types = basic_config$plot_type_select
   region = basic_config$region
-
+  
 	# Initialize session data
 	session$userData$configs = list()
 	current_plots = reactiveValues()
@@ -20,6 +23,7 @@ app_server <- function(input, output, session) {
   session$userData$plot_types = NULL
   session$userData$region = reactiveVal(NULL)
   session$userData$plot_heights = reactiveValues()
+  session$userData$brush_zoom = reactiveVal(NULL)
   
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
@@ -38,7 +42,8 @@ app_server <- function(input, output, session) {
           prev_configs, toolbar_config)
     plot_configs[[type]] = get(paste0(type,'_config'))
   })
-  mod_plot_server("plot_1", basic_config, current_plots, plot_configs, toolbar_config)
+  mod_plot_server("plot_1", basic_config, current_plots, plot_configs, prev_configs, 
+    toolbar_config)
 
 	# Build dynamic UI
 	observeEvent(plot_types(), {

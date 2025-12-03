@@ -16,32 +16,36 @@ mod_toolbar_ui <- function(id) {
         ns("zoom_in"),
         label = "Zoom in",
         class = "toolbar-button",
-        icon = shiny::icon("magnifying-glass-plus")
+        icon = shiny::icon("magnifying-glass-plus"),
+        onclick = "hideBrush()"
       ),
       shiny::actionButton(
         ns("zoom_out"),
         label = "Zoom out",
         class = "toolbar-button",
-        icon = shiny::icon("magnifying-glass-minus")
+        icon = shiny::icon("magnifying-glass-minus"),
+        onclick = "hideBrush()"
       ),
       shiny::actionButton(
         ns("toggle_alignment_bar"),
         label = "Toggle alignment bar",
         class = "toolbar-button",
         icon = shiny::icon("sort"),
-        onclick = "dragElement()"
+        onclick = "dragLine()"
       ),
       shiny::actionButton(
         ns("toggle_brush"),
         label = "Toggle region selector",
         class = "toolbar-button",
-        icon = shiny::icon("arrows-left-right-to-line")
+        icon = shiny::icon("arrows-left-right-to-line"),
+        onclick = "brushElement()"
       ),
       shiny::actionButton(
         ns("update_plots"),
         label = "Update plots",
         class = "toolbar-button",
-        icon = shiny::icon("arrows-rotate")
+        icon = shiny::icon("arrows-rotate"),
+        onclick = "hideBrush()"
       )
     )
   )

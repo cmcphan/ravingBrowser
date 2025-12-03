@@ -86,10 +86,8 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       if(zoomed_region$width <= 1){
         return()
       }
-      res_scale = config$resolution / (config$end-config$start)
       config$start = zoomed_region$start
       config$end = zoomed_region$end
-      config$resolution = floor((config$end-config$start) * res_scale)
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
@@ -103,13 +101,25 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       if(config$start == zoomed_region$start & config$end == zoomed_region$end){
         return()
       }
-      res_scale = config$resolution / (config$end-config$start)
       config$start = zoomed_region$start
       config$end = zoomed_region$end
-      config$resolution = floor((config$end-config$start) * res_scale)
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
+    })
+
+    observeEvent(session$userData$brush_zoom(), {
+      if(!"genes" %in% isolate(basic_config$plot_type_select())){
+        return()
+      }
+      brush_coords = session$userData$brush_zoom()
+      start = prev_configs[["genes"]]$start
+      end = prev_configs[["genes"]]$end
+      width = end - start
+      config$start = as.integer(start + (brush_coords[1] * width))
+      config$end = as.integer(start + (brush_coords[2] * width))
+      draw_plots(config)
+      prev_configs[["genes"]] = reactiveValuesToList(config)
     })
   })
 }

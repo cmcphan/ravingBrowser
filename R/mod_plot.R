@@ -13,12 +13,19 @@
 mod_plot_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto',
-      brush=brushOpts(id=ns("plot_brush"), direction="x", resetOnNew=TRUE))),
+    shinycssloaders::withSpinner(plotOutput(ns('patchwork'), height='auto')),
     tags$div(id=ns("alignment_bar"), class="alignment_bar",
       tags$div(id=ns("alignment_bar_padding_left"), class="alignment_bar_padding"),
       tags$div(id=ns("alignment_bar_line"), class="alignment_bar_line"),
       tags$div(id=ns("alignment_bar_padding_right"), class="alignment_bar_padding")
+    ),
+    tags$div(id=ns("brush"), class="plot_brush",
+      shiny::actionButton(
+        ns("brush_zoom"),
+        label = "Zoom to area",
+        class = "plot_brush_button",
+        onclick = "hideBrush()"
+      )
     )
   )
 }
@@ -39,11 +46,10 @@ mod_plot_ui <- function(id) {
 #' 
 #' @import shiny
 #' @importFrom shinycssloaders showSpinner hideSpinner
-#' @importFrom patchwork wrap_plots
+#' @importFrom patchwork wrap_plots patchworkGrob
 #' @importFrom shinyjs addClass removeClass
-#' @importFrom ggplotify as.ggplot
 mod_plot_server <- function(id, basic_config, current_plots, plot_configs, 
-toolbar_config){
+prev_configs, toolbar_config){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -56,7 +62,8 @@ toolbar_config){
     })
 
     observeEvent({basic_config$draw_plots() | toolbar_config$zoom_in() |
-      toolbar_config$zoom_out() | toolbar_config$update_plots()}, {
+      toolbar_config$zoom_out() | toolbar_config$update_plots() |
+      input$brush_zoom}, {
       if(!shiny::isTruthy(session$userData$region())){
         return()
       }
@@ -65,7 +72,8 @@ toolbar_config){
     }, priority = 1)
 
     observeEvent({basic_config$draw_plots() | toolbar_config$zoom_in() |
-      toolbar_config$zoom_out() | toolbar_config$update_plots()}, {
+      toolbar_config$zoom_out() | toolbar_config$update_plots() | 
+      input$brush_zoom}, {
       if(!shiny::isTruthy(session$userData$region())){
         return()
       }
@@ -88,7 +96,6 @@ toolbar_config){
           plotlist_clean,
           ncol = 1
         )
-        #attr(plot, "class") = c("ggplot", "patchwork")
         session$userData$patchwork_plot(plot)
       }
       rm(plotlist)
@@ -98,13 +105,16 @@ toolbar_config){
     output$patchwork = renderPlot({
       plot = session$userData$patchwork_plot()
       if("patchwork" %in% attr(plot, "class")){
-        plot = patchwork::patchworkGrob(plot)
-        plot = ggplotify::as.ggplot(plot)
-        plot
+        plot_info = patchwork::patchworkGrob(plot)
+        # Calculate pixel widths of plot elements
+        w_px = grid::convertWidth(plot_info$width, "native", TRUE)
+        # Total pixel widths before and after the actual plot panel
+        pre_panel = sum(w_px[1:which(as.character(plot_info$width) == "1null")-1])
+        post_panel = sum(w_px)-pre_panel
+        # These need to be passed through to the brush javascript onclick function
+        session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
       }
-      else{
-        plot
-      }
+      plot
     }, 
       res = 96,
       height = function(){
@@ -118,13 +128,39 @@ toolbar_config){
       }
     )
 
-    observeEvent(toolbar_config$toggle_brush(), {
-      print("Brush toggled")
-    })
-
-    observeEvent(input$plot_brush, {
-      print(paste0("Min = ",input$plot_brush$xmin, ", max = ",input$plot_brush$xmax))
-    })
+    observeEvent(input$brush_zoom, {
+      brush_coords = input$brush_coords
+      if(!shiny::isTruthy(brush_coords)){
+        shiny::showNotification(
+          "No plot to zoom on.",
+          duration = 5,
+          closeButton = TRUE,
+          id = 'brush_zoom_missing_plot_notif',
+          type = 'error',
+          session = session
+        )
+        return()
+      }
+      if(brush_coords[1] < 0){
+        brush_coords[1] = 0
+      }
+      if(brush_coords[2] > 1){
+        brush_coords[2] = 1
+      }
+      if(brush_coords[1] >= brush_coords[2]){
+        # As is the case when the brush is not dragged out at all
+        shiny::showNotification(
+          "Area is too narrow.",
+          duration = 5,
+          closeButton = TRUE,
+          id = 'brush_zoom_narrow_area_notif',
+          type = 'error',
+          session = session
+        )
+        return()
+      }
+      session$userData$brush_zoom(brush_coords)
+    }, priority=1)
   })
 }
     

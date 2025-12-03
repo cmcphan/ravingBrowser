@@ -166,6 +166,22 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       prev_configs[["chip"]] = reactiveValuesToList(config)
       return()
     })
+
+    observeEvent(session$userData$brush_zoom(), {
+      if(!("chip" %in% isolate(basic_config$plot_type_select()))){
+        return()
+      }
+      brush_coords = session$userData$brush_zoom()
+      start = prev_configs[["chip"]]$start
+      end = prev_configs[["chip"]]$end
+      width = end - start
+      res_scale = config$resolution / width
+      config$start = as.integer(start + (brush_coords[1] * width))
+      config$end = as.integer(start + (brush_coords[2] * width))
+      config$resolution = floor((config$end-config$start) * res_scale)
+      draw_plots(config)
+      prev_configs[["chip"]] = reactiveValuesToList(config)
+    })
   })
 }
     

@@ -154,6 +154,20 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       prev_configs[["hic"]] = reactiveValuesToList(config)
       return()
     })
+
+    observeEvent(session$userData$brush_zoom(), {
+      if(!"hic" %in% isolate(basic_config$plot_type_select())){
+        return()
+      }
+      brush_coords = session$userData$brush_zoom()
+      start = prev_configs[["hic"]]$start
+      end = prev_configs[["hic"]]$end
+      width = end - start
+      config$start = as.integer(start + (brush_coords[1] * width))
+      config$end = as.integer(start + (brush_coords[2] * width))
+      draw_plots(config)
+      prev_configs[["hic"]] = reactiveValuesToList(config)
+    })
   })  
 }
     

@@ -3,47 +3,47 @@ function getLine() {
   return document.getElementById("plot_1-alignment_bar");
 }
 
-function getButton() {
+function getBarButton() {
   return document.getElementById("toolbar_1-toggle_alignment_bar")
 }
 
 function disableLine() {
   line = getLine();
-  button = getButton();
+  button = getBarButton();
   line.onmousedown = null;
   line.style.visibility = "hidden";
   button.removeEventListener("click", disableLine);
-  button.addEventListener("click", dragElement)
+  button.addEventListener("click", dragLine)
 }
 
-function dragElement() {
+function dragLine() {
   var xInitial = 0, xNew = 0;
   line = getLine();
-  button = getButton();
+  button = getBarButton();
   line.onmousedown = dragMouseDown;
   line.style.visibility = "visible";
-  button.removeEventListener("click", dragElement);
+  button.removeEventListener("click", dragLine);
   button.addEventListener("click", disableLine);
 
   function dragMouseDown(e) {
     e.preventDefault();
     // get the mouse cursor position at startup:
     xInitial = e.clientX;
-    document.onmouseup = closeDragElement;
+    document.onmouseup = closeDragLine;
     // call a function whenever the cursor moves:
-    document.onmousemove = elementDrag;
+    document.onmousemove = lineDrag;
   }
 
-  function elementDrag(e) {
+  function lineDrag(e) {
     e.preventDefault();
     // calculate the new cursor position:
     xNew = xInitial - e.clientX;
     xInitial = e.clientX;
-    xMax = window.screen.width * 0.74
+    xMax = getPlotWidth() * 0.95; // From plotBrush.js
     // set the element's new position:
-    xSet = line.offsetLeft - xNew
+    xSet = line.offsetLeft - xNew;
     if (xSet < 0) {
-      line.style.left = 0 + "px"
+      line.style.left = 0 + "px";
     } else if (xSet > xMax) {
       line.style.left = xMax + "px";
     } else {
@@ -51,7 +51,7 @@ function dragElement() {
     }
   }
 
-  function closeDragElement() {
+  function closeDragLine() {
     // stop moving when mouse button is released:
     document.onmouseup = null;
     document.onmousemove = null;
