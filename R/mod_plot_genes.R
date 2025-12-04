@@ -48,7 +48,10 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       config$start = as.numeric(region$start)
       config$end = as.numeric(region$end)
       config$elements = plot_config$elements()
-      config$selected = TRUE
+      if(!("genes" %in% isolate(basic_config$plot_type_select()))){
+        config$selected = FALSE
+      }
+      else { config$selected = TRUE }
       return(config)
     }
 
@@ -69,10 +72,9 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       }
       
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["genes"]])){
+      if(identical(config, prev_configs[["genes"]]) | !config$selected){
         return()
       }
-      
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
@@ -86,6 +88,9 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       config$chr = region$chr
       config$start = region$start
       config$end = region$end
+      if(identical(config, prev_configs[["genes"]]) | !config$selected){
+        return()
+      }
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
@@ -96,7 +101,7 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       config = build_config()
-      if(identical(config, prev_configs[["genes"]])){
+      if(identical(config, prev_configs[["genes"]]) | !config$selected){
         return()
       }
       draw_plots(config)

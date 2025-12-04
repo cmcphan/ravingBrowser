@@ -120,6 +120,13 @@ prev_configs, toolbar_config){
         # These need to be passed through to the brush javascript onclick function
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
       }
+      else if("ggplot" %in% attr(plot, "class")){
+        plot_info = ggplot2::ggplotGrob(plot)
+        w_px = grid::convertWidth(plot_info$width, "native", TRUE)
+        pre_panel = sum(w_px[1:which(as.character(plot_info$width) == "1null")-1])
+        post_panel = sum(w_px)-pre_panel
+        session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
+      }
       plot
     }, 
       res = 96,

@@ -55,7 +55,10 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       config$normalization = plot_config$normalization()
       config$format = plot_config$format()
       config$elements = plot_config$elements()
-      config$selected = TRUE
+      if(!("hic" %in% isolate(basic_config$plot_type_select()))){
+        config$selected = FALSE
+      }
+      else { config$selected = TRUE }
       return(config)
     }
 
@@ -85,7 +88,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
     }
 
     observeEvent(basic_config$draw_plots(), {
-      if(!shiny::isTruthy(session$userData$region())){
+      if(!shiny::isTruthy(session$userData$activeRegion())){
         return()
       }
       if(!('hic' %in% isolate(basic_config$plot_type_select()))){
@@ -95,15 +98,13 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
         session$userData$plot_heights[["hic-loops"]] = 0
         current_plots[["hic-pca"]] = NULL
         session$userData$plot_heights[["hic-pca"]] = 0
-        prev_configs[["hic"]]$selected = FALSE
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["hic"]])){
+      if(identical(config, prev_configs[["hic"]]) | !config$selected){
         return()
       }
-      
       draw_plots(config)
       prev_configs[["hic"]] = reactiveValuesToList(config)
       return()
@@ -117,6 +118,9 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       config$chr = region$chr
       config$start = region$start
       config$end = region$end
+      if(identical(config, prev_configs[["hic"]]) | !config$selected){
+        return()
+      }
       draw_plots(config)
       prev_configs[["hic"]] = reactiveValuesToList(config)
       return()
@@ -127,7 +131,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       config = build_config()
-      if(identical(config, prev_configs[["hic"]])){
+      if(identical(config, prev_configs[["hic"]]) | !config$selected){
         return()
       }
       draw_plots(config)

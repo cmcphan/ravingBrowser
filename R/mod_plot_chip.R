@@ -54,7 +54,10 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       width = config$end - config$start
       config$resolution = as.integer(width / plot_config$resolution())
       config$chip_samples = plot_config$elements()
-      config$selected = TRUE
+      if(!("chip" %in% isolate(basic_config$plot_type_select()))){
+        config$selected = FALSE
+      }
+      else { config$selected = TRUE }
       return(config)
     }
 
@@ -92,16 +95,14 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
         for(s in browser_data$chip$bw_sample_names){
           current_plots[[paste0("chip-",s)]] = NULL
           session$userData$plot_heights[[paste0("chip-",s)]] = 0
-          prev_configs[["chip"]]$selected = FALSE
         }
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["chip"]])){
+      if(identical(config, prev_configs[["chip"]]) | !config$selected){
         return()
       }
-      
       draw_plots(config)
       prev_configs[["chip"]] = reactiveValuesToList(config)
       plotted_region(list(chr = config$chr, start = config$start, end = config$end))
@@ -118,6 +119,9 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       config$end = region$end
       width = config$end - config$start
       config$resolution = as.integer(width / plot_config$resolution())
+      if(identical(config, prev_configs[["chip"]]) | !config$selected){
+        return()
+      }
       draw_plots(config)
       prev_configs[["chip"]] = reactiveValuesToList(config)
       return()
@@ -128,7 +132,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       config = build_config()
-      if(identical(config, prev_configs[["chip"]])){
+      if(identical(config, prev_configs[["chip"]]) | !config$selected){
         return()
       }
       draw_plots(config)
