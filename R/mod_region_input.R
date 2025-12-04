@@ -27,7 +27,8 @@ mod_region_input_ui <- function(id) {
           label = 'Region limits (in base pairs):',
           min = 1,
           max = browser_data$hic_info[browser_data$default_chr, 'length'],
-          value = c(1, browser_data$default_chr_length)
+          value = c(1, browser_data$default_chr_length),
+          step = browser_data$hic_info[browser_data$default_chr, 'length'] / 5
         ),
         actionButton(
           inputId = ns('toggle_region_size'),
@@ -73,6 +74,14 @@ mod_region_input_server <- function(id, current_tab){
     # Keep track of max bound of currently selected chromosome
     current_max = reactive({ browser_data$hic_info[input$region_chr, 'length'] })
 
+    observeEvent(input$region_size_slider, {
+      updateSliderInput(
+        session = session,
+        inputId = "region_size_slider",
+        step = 25
+      )
+    }, once=TRUE)
+
     observeEvent(input$toggle_region_size, {
       shinyjs::toggleState(id='region_size_slider')
       shinyjs::toggleState(id='region_size_direct_min')
@@ -103,8 +112,11 @@ mod_region_input_server <- function(id, current_tab){
     
     observeEvent(input$region_chr, {
       updated_max = current_max()
+      # Set high step first to generate neat tick labels
       updateSliderInput(session, 'region_size_slider', max=updated_max,
-        value=c(1, updated_max))
+        value=c(1, updated_max), step = updated_max / 5)
+      # Immediately update the step so it's actually useable but keep labels
+      updateSliderInput(session, 'region_size_slider', step = 25)
       updateNumericInput(session, 'region_size_direct_min', max=updated_max-1,
         value=1)
       updateNumericInput(session, 'region_size_direct_max', max=updated_max,
