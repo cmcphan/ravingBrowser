@@ -43,7 +43,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
 
     config = reactiveValues()
     build_config = function(){
-      region = session$userData$region()
+      region = isolate(session$userData$activeRegion())
       if(!shiny::isTruthy(region)){
         config = reactiveValues()
         return()
@@ -51,7 +51,8 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       config$chr = region$chr
       config$start = as.numeric(region$start)
       config$end = as.numeric(region$end)
-      config$resolution = plot_config$resolution()
+      width = config$end - config$start
+      config$resolution = as.integer(width / plot_config$resolution())
       config$chip_samples = plot_config$elements()
       config$selected = TRUE
       return(config)
@@ -107,35 +108,16 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       return()
     })
 
-    observeEvent(toolbar_config$zoom_in(), {
+    observeEvent(session$userData$activeRegion(), {
       if(length(reactiveValuesToList(config)) == 0){
         return()
       }
-      zoomed_region = zoom(config$chr, config$start, config$end, "in")
-      if(zoomed_region$width <= 1){
-        return()
-      }
-      res_scale = config$resolution / (config$end-config$start)
-      config$start = zoomed_region$start
-      config$end = zoomed_region$end
-      config$resolution = floor((config$end-config$start) * res_scale)
-      draw_plots(config)
-      prev_configs[["chip"]] = reactiveValuesToList(config)
-      return()
-    })
-
-    observeEvent(toolbar_config$zoom_out(), {
-      if(length(reactiveValuesToList(config)) == 0){
-        return()
-      }
-      zoomed_region = zoom(config$chr, config$start, config$end, "out")
-      if(config$start == zoomed_region$start & config$end == zoomed_region$end){
-        return()
-      }
-      res_scale = config$resolution / (config$end-config$start)
-      config$start = zoomed_region$start
-      config$end = zoomed_region$end
-      config$resolution = floor((config$end-config$start) * res_scale)
+      region = isolate(session$userData$activeRegion())
+      config$chr = region$chr
+      config$start = region$start
+      config$end = region$end
+      width = config$end - config$start
+      config$resolution = as.integer(width / plot_config$resolution())
       draw_plots(config)
       prev_configs[["chip"]] = reactiveValuesToList(config)
       return()
@@ -145,42 +127,13 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       if(length(reactiveValuesToList(config)) == 0){
         return()
       }
-      chr = config$chr
-      start = config$start
-      end = config$end
-      resolution = config$resolution
       config = build_config()
-      # If the region has been changed, prevent the resolution from being updated
-      #  relative to the new region. This prevents abusing the UI to get a much
-      #  higher resolution than should be possible for the given plot.
-      comp = plotted_region()
-      if(config$chr != comp$chr | 
-        config$start != comp$start | 
-        config$end != comp$end){
-        config$resolution = resolution
+      if(identical(config, prev_configs[["chip"]])){
+        return()
       }
-      config$chr = chr
-      config$start = start
-      config$end = end
       draw_plots(config)
       prev_configs[["chip"]] = reactiveValuesToList(config)
       return()
-    })
-
-    observeEvent(session$userData$brush_zoom(), {
-      if(!("chip" %in% isolate(basic_config$plot_type_select()))){
-        return()
-      }
-      brush_coords = session$userData$brush_zoom()
-      start = prev_configs[["chip"]]$start
-      end = prev_configs[["chip"]]$end
-      width = end - start
-      res_scale = config$resolution / width
-      config$start = as.integer(start + (brush_coords[1] * width))
-      config$end = as.integer(start + (brush_coords[2] * width))
-      config$resolution = floor((config$end-config$start) * res_scale)
-      draw_plots(config)
-      prev_configs[["chip"]] = reactiveValuesToList(config)
     })
   })
 }

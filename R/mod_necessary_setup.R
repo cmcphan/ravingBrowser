@@ -31,6 +31,9 @@ mod_necessary_setup_ui <- function(id) {
         selected = 'region_input',
         type = 'tabs'
       ),
+      htmlOutput(
+        outputId = ns("region_display")
+      ),
       actionButton(
         inputId = ns('draw_plots'),
         label = 'Draw plots'
@@ -55,6 +58,39 @@ mod_necessary_setup_server <- function(id){
 
     mod_region_input_server("region_input_1", inputs$current_tab)
     mod_gene_select_server("gene_select_1", inputs$current_tab)
+
+    observeEvent(session$userData$activeRegion(),{
+      region = session$userData$activeRegion()
+      if(!shiny::isTruthy(region)){
+        output$region_display = NULL
+      }
+      else{
+        output$region_display = renderUI(HTML(paste0(
+          tags$b("Currently active region:"),
+          tags$p(paste0("Chr ",region$chr,": ",region$start," - ",region$end))
+        )))
+      }
+    })
+    
+
+    observeEvent(input$draw_plots,{
+      if(!shiny::isTruthy(session$userData$region())){
+        shiny::showNotification(
+          'Region is not set. Input a region or select a gene.',
+          duration = NULL,
+          closeButton = FALSE,
+          id = 'region_notif',
+          type = 'error',
+          session = session
+        )
+        session$userData$plot_redraw = FALSE
+        return()
+      }
+      else{
+        session$userData$activeRegion(session$userData$region())
+        session$userData$plot_redraw = TRUE
+      }
+    }, priority = 1)
 
     return( inputs )
   })

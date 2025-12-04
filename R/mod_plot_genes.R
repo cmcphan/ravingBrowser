@@ -39,7 +39,7 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
 
     config = reactiveValues()
     build_config = function(){
-      region = session$userData$region()
+      region = session$userData$activeRegion()
       if(!shiny::isTruthy(region)){
         config = reactiveValues()
         return()
@@ -78,48 +78,30 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       return()
     })
 
-    observeEvent(toolbar_config$zoom_in(), {
+    observeEvent(session$userData$activeRegion(), {
       if(length(reactiveValuesToList(config)) == 0){
         return()
       }
-      zoomed_region = zoom(config$chr, config$start, config$end, "in")
-      if(zoomed_region$width <= 1){
-        return()
-      }
-      config$start = zoomed_region$start
-      config$end = zoomed_region$end
+      region = isolate(session$userData$activeRegion())
+      config$chr = region$chr
+      config$start = region$start
+      config$end = region$end
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
     })
 
-    observeEvent(toolbar_config$zoom_out(), {
+    observeEvent(toolbar_config$update_plots(), {
       if(length(reactiveValuesToList(config)) == 0){
         return()
       }
-      zoomed_region = zoom(config$chr, config$start, config$end, "out")
-      if(config$start == zoomed_region$start & config$end == zoomed_region$end){
+      config = build_config()
+      if(identical(config, prev_configs[["genes"]])){
         return()
       }
-      config$start = zoomed_region$start
-      config$end = zoomed_region$end
       draw_plots(config)
       prev_configs[["genes"]] = reactiveValuesToList(config)
       return()
-    })
-
-    observeEvent(session$userData$brush_zoom(), {
-      if(!"genes" %in% isolate(basic_config$plot_type_select())){
-        return()
-      }
-      brush_coords = session$userData$brush_zoom()
-      start = prev_configs[["genes"]]$start
-      end = prev_configs[["genes"]]$end
-      width = end - start
-      config$start = as.integer(start + (brush_coords[1] * width))
-      config$end = as.integer(start + (brush_coords[2] * width))
-      draw_plots(config)
-      prev_configs[["genes"]] = reactiveValuesToList(config)
     })
   })
 }

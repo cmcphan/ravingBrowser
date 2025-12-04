@@ -67,6 +67,9 @@ prev_configs, toolbar_config){
       if(!shiny::isTruthy(session$userData$region())){
         return()
       }
+      if(!session$userData$plot_redraw){
+        return()
+      }
       shinycssloaders::showSpinner("patchwork")
       shinyjs::addClass(selector="#plot_1-patchwork", class="recalculating")
     }, priority = 1)
@@ -75,6 +78,9 @@ prev_configs, toolbar_config){
       toolbar_config$zoom_out() | toolbar_config$update_plots() | 
       input$brush_zoom}, {
       if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
+      if(!session$userData$plot_redraw){
         return()
       }
       plotlist = isolate(reactiveValuesToList(current_plots))
@@ -139,6 +145,7 @@ prev_configs, toolbar_config){
           type = 'error',
           session = session
         )
+        session$userData$plot_redraw = FALSE
         return()
       }
       if(brush_coords[1] < 0){
@@ -157,9 +164,23 @@ prev_configs, toolbar_config){
           type = 'error',
           session = session
         )
+        session$userData$plot_redraw = FALSE
         return()
       }
-      session$userData$brush_zoom(brush_coords)
+      region = isolate(session$userData$activeRegion())
+      start = region$start
+      end = region$end
+      width = end - start
+      newStart = as.integer(start + (brush_coords[1] * width))
+      newEnd = as.integer(start + (brush_coords[2] * width))
+      zoomed_region = list(
+        chr = region$chr,
+        start = newStart,
+        end = newEnd,
+        width = newEnd - newStart
+      )
+      session$userData$activeRegion(zoomed_region)
+      session$userData$plot_redraw = TRUE
     }, priority=1)
   })
 }

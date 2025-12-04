@@ -120,6 +120,30 @@ mod_toolbar_server <- function(id){
       }
     )
 
+    observeEvent(input$zoom_in, {
+      region = session$userData$activeRegion()
+      zoomed_region = zoom(region$chr, region$start, region$end, "in")
+      if(zoomed_region$width <= 1){
+        zoomed_region = NULL
+      }
+      session$userData$activeRegion(zoomed_region)
+      session$userData$plot_redraw = TRUE
+    }, priority = 1)
+
+    observeEvent(input$zoom_out, {
+      region = session$userData$activeRegion()
+      zoomed_region = zoom(region$chr, region$start, region$end, "out")
+      if(zoomed_region$width <= 1){
+        zoomed_region = NULL
+      }
+      session$userData$activeRegion(zoomed_region)
+      session$userData$plot_redraw = TRUE
+    }, priority = 1)
+
+    observeEvent(input$update_plots, {
+      session$userData$plot_redraw = TRUE
+    }, priority = 1)
+
     return(
       list(
         plot_download = reactive({ input$plot_download }),

@@ -21,9 +21,13 @@ app_server <- function(input, output, session) {
   prev_configs = reactiveValues()
   session$userData$patchwork_plot = reactiveVal(NULL)
   session$userData$plot_types = NULL
+  # This represents the selections made in the UI
   session$userData$region = reactiveVal(NULL)
+  # This represents the current region shown in the plots
+  session$userData$activeRegion = reactiveVal(NULL)
   session$userData$plot_heights = reactiveValues()
   session$userData$brush_zoom = reactiveVal(NULL)
+  session$userData$plot_redraw = TRUE
   
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
@@ -67,20 +71,6 @@ app_server <- function(input, output, session) {
 
 		session$userData$plot_types = plot_types()
   }, ignoreNULL = FALSE )
-
-  observeEvent(basic_config$draw_plots(),{
-    if(!shiny::isTruthy(session$userData$region())){
-      shiny::showNotification(
-        'Region is not set. Input a region or select a gene.',
-        duration = NULL,
-        closeButton = FALSE,
-        id = 'region_notif',
-        type = 'error',
-        session = session
-      )
-      return()
-    }
-	})
 
   observeEvent(session$userData$region(), {
     if(!shiny::isTruthy(session$userData$region())){

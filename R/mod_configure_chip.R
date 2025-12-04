@@ -13,30 +13,31 @@ mod_configure_chip_ui <- function(id, session) {
 
   region = isolate(session$userData$region())
   if(!shiny::isTruthy(region)){
-    region_width = browser_data$hic_info[browser_data$default_chr, 'length']-1
+    region_width = browser_data$hic_info[browser_data$default_chr, "length"]-1
   }
   else{
     region_width = region$width
   }
-  min = as.integer(region_width/2000)
-  max = as.integer(region_width/250)
-  step = as.integer((max-min)/100)
+  max = as.integer(2000)
+  min = as.integer(250)
+  step = as.integer(250)
 
   tagList(
-    tags$div(id='chip_controls',
-      tags$h3('ChIP-seq'),
+    tags$div(id="chip_controls",
+      tags$h3("ChIP-seq"),
       checkboxGroupInput(
-        inputId = ns('chip_samples'),
-        label = 'Select any number of samples to plot:',
+        inputId = ns("chip_samples"),
+        label = "Select any number of samples to plot:",
         choices = browser_data$chip$bw_sample_names
       ),
       sliderInput(
-        inputId = ns('resolution'),
-        label = 'Bin size (base pairs):',
+        inputId = ns("resolution"),
+        label = "Resolution (as proportion of region width):",
         min = min,
         max = max,
         value = min,
-        step = step
+        step = step,
+        pre = "1/"
       ),
       tags$hr()
     )
@@ -51,29 +52,18 @@ mod_configure_chip_ui <- function(id, session) {
 mod_configure_chip_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
-    
-    observeEvent(session$userData$region(), {
-      region = session$userData$region()
-      if(is.na(region$start) | is.na(region$end)){
-        return()
-      }
-      region_width = region$end - region$start
-      if(region$width < 2000){
-        region_width = 2000
-      }
-      min = as.integer(region_width/2000)
-      max = as.integer(region_width/250)
-      step = as.integer((max-min)/100)
+
+    # This will run once when the slider is created
+    # Set a lower step to preserve the tick marks but allow a greater
+    #  number of selections
+    observeEvent(input$resolution, {
       updateSliderInput(
-        inputId = 'resolution',
-        min = min,
-        max = max,
-        value = isolate(max(min(input$resolution, max), min)),
-        step = step,
-        session = session
+        session = session,
+        inputId = "resolution",
+        step = 25,
+        value = 1000
       )
-    }, ignoreInit=FALSE)
-      
+    }, once=TRUE)
 
     return(
       list(
