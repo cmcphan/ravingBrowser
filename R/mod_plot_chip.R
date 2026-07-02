@@ -37,8 +37,8 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
     ns <- session$ns
 
     # Initialize and set plot order
-    for(s in browser_data$chip$bw_sample_names){
-      current_plots[[paste0("chip-",s)]] = NULL
+    for(m in browser_data$chip$chip_marks){
+      current_plots[[paste0("chip-",m)]] = NULL
     }
 
     config = reactiveValues()
@@ -53,7 +53,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       config$end = as.numeric(region$end)
       width = config$end - config$start
       config$resolution = as.integer(width / plot_config$resolution())
-      config$chip_samples = plot_config$elements()
+      config$marks = plot_config$elements()
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
         config$selected = FALSE
       }
@@ -62,27 +62,27 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
     }
 
     draw_plots = function(config){
-      if(length(config$chip_samples) == 0){
+      if(length(config$marks) == 0){
         prev_configs[["chip"]] = config
-        for(s in browser_data$chip$bw_sample_names){
-          current_plots[[paste0("chip-",s)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+        for(m in browser_data$chip$chip_marks){
+          current_plots[[paste0("chip-",m)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
         return()
       }
       
       # Reset any deselected plots
-      for(s in browser_data$chip$bw_sample_names){
-        if(!(s %in% config$chip_samples)){
-          current_plots[[paste0("chip-",s)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+      for(m in browser_data$chip$chip_marks){
+        if(!(m %in% config$marks)){
+          current_plots[[paste0("chip-",m)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
       }
       
       plots = plot_chip(config$chr, config$start, config$end, 
-        config$resolution, config$chip_samples, session)
-      for(s in names(plots)){
-        current_plots[[paste0("chip-",s)]] = plots[[s]]
+        config$resolution, config$marks, session)
+      for(m in names(plots)){
+        current_plots[[paste0("chip-",m)]] = plots[[m]]
       }
     }
 
@@ -92,9 +92,9 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
-        for(s in browser_data$chip$bw_sample_names){
-          current_plots[[paste0("chip-",s)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",s)]] = 0
+        for(m in browser_data$chip$chip_marks){
+          current_plots[[paste0("chip-",m)]] = NULL
+          session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
         return()
       }

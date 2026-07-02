@@ -25,6 +25,7 @@
 #' importFrom strawr straw
 plot_hic <- function(chr, start, end, resolution, normalization='KR',
                 format='triangular', session){
+  print("HIC PLOTTING FUNCTION CALLED")
   hic_path = browser_data$hic
   if(format == 'square'){
     strawr_query = paste(chr,start,end, sep=':')
@@ -43,7 +44,9 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         plot.margin=ggplot2::margin(0, 0, 0, 0),
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
-        axis.text.y=ggplot2::element_blank())
+        axis.text.y=ggplot2::element_blank(),
+        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+      )
     session$userData$plot_heights[["hic-hic"]] = 1
   }
   else if(format == 'triangular'){
@@ -63,7 +66,9 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         plot.margin=ggplot2::margin(0, 0, 0, 0),
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
-        axis.text.y=ggplot2::element_blank())
+        axis.text.y=ggplot2::element_blank(),
+        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+      )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
   else if(format == 'rectangular'){
@@ -83,7 +88,9 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         plot.margin=ggplot2::margin(0, 0, 0, 0),
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
-        axis.text.y=ggplot2::element_blank())
+        axis.text.y=ggplot2::element_blank(),
+        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+      )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
   attr(plot, 'format') = format
@@ -173,7 +180,8 @@ plot_loops <- function(chr, start, end, session){
     ggraph::geom_edge_arc0(ggplot2::aes(alpha=min_pval/lPval), strength = -1) +
     ggraph::theme_graph(plot_margin=ggplot2::margin(0, 0, 0, 0),
       base_family='sans') +
-    ggplot2::theme(aspect.ratio=0.05) +
+    ggplot2::theme(aspect.ratio=0.05, 
+      text=ggplot2::element_text(size=11/session$clientData$pixelratio)) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
   session$userData$plot_heights[["hic-loops"]] = 0.05
   rm(included_cis_loops)
@@ -222,7 +230,8 @@ plot_pca <- function(chr, start, end, session){
       aspect.ratio=0.1,
       axis.title=ggplot2::element_blank(),
       axis.ticks=ggplot2::element_blank(),
-      axis.text=ggplot2::element_blank())
+      axis.text=ggplot2::element_blank()
+    )
   session$userData$plot_heights[["hic-pca"]] = 0.1
   rm(included_pca)
   rm(included_pca_A)

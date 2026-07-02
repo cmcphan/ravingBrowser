@@ -4,6 +4,9 @@
 #'  static data required for sharing among ravingBrowser modules, e.g. data
 #'  frames for plot construction and back end metadata
 #'
+#' @field genome String representing file path to genome file. Genome file
+#'  should contain names and sizes for chromosomes to be visualised. Chromosome
+#'  naming must be consistent with Hi-C data if present.
 #' @field hic String representing the file path to the .hic file
 #' @field hic_chrs Vector of strings enumerating the available chromosomes in the
 #'  loaded HiC file
@@ -20,8 +23,25 @@
 #' @field tads,loops,pca Data frames containing data for topologically associated
 #'  domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
 #'  scores) matching to the loaded HiC file
-#' @field chip Bigwig file information for ChIP datasets, used internally by
-#'  [get_summaries()]
+#' @field chip_signal Bigwig file information for ChIP datasets, used internally by
+#'  [get_summaries()]. Names should be of the form {sample}_{mark}.bigWig. Input samples
+#'  should replace {mark} with INPUT.
+#' @field chip_peaks A list of strings describing filepaths to BED-like files containing
+#'  called ChIP-seq peaks. These are outputs from bedtools multiinter which describe overlapping
+#'  intervals between processed and cleaned called peaks across all samples for the same mark. 
+#'  File names should be of the form `{mark}_{broad/narrow}_overlap.multiinter`. All files should
+#'  have the same set of samples included. Any that don't include all samples should be processed
+#'  with awk to add the remaining samples. A header line should be included.
+#' @field chip_marks A list of unique ChIP-seq marks included in the data.
+#' @field atac_signal Bigwig file information for ATAC datasets, used internally by
+#'  [get_summaries()]. Names should be of the form {sample}.bigWig.
+#' @field atac_peaks A list of strings describing filepaths to BED files containing
+#'  processed and cleaned called ATAC-seq peaks. Filenames should be of the form 
+#'  {peakset}_{broad/narrow}_overlap.multiinter, where peakset may be any identifier to 
+#'  group files of the same set, e.g. method used. Peakset should not include any underscores
+#'  (_) to enable proper name parsing. All files should have the same set of samples included. 
+#'  Any that don't include all samples should be processed with awk to add the remaining samples.
+#'  A header line should be included.
 #' @field genes Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
 #' @field gene_feature_counts Named vector of unique gene biotypes from `genes` data
@@ -32,11 +52,12 @@
 #' 
 #' @importFrom R6 R6Class
 #' @import strawr
-#' @importFrom readr read_tsv
+#' @importFrom readr read_tsv cols col_character
 #' @importFrom genekitr genInfo
 BrowserData <- R6::R6Class(
 	'BrowserData',
 	public = list(
+    genome = NULL,
 		hic = NULL,
 		hic_chrs = NULL,
 		hic_info = NULL,
@@ -47,23 +68,42 @@ BrowserData <- R6::R6Class(
 		tads = NULL,
 		loops = NULL,
 		pca = NULL,
-		chip = NULL,
+		chip_signal = NULL,
+    chip_peaks = NULL,
+    chip_marks = NULL,
+    atac_signal = NULL,
+    atac_peaks = NULL,
 		genes = NULL,
     gene_feature_counts = NULL,
 		plot_types = NULL,
 		#' @description Create a new BrowserData object and build the data from the input
 		#'  files provided.
+    #' @param genome_path File path to the corresponding genome file
 		#' @param hic_path File path to the corresponding HiC matrix input file
 		#' @param tads_path File path to the corresponding topologically associated domain
 		#'  input file
 		#' @param loops_path File path to the corresponding loops input file
 		#' @param pca_path File path to the corresponding PCA input file
-		#' @param chip_paths File paths to the corresponding ChIP Bigwig input files
+		#' @param chip_signal_paths File paths to the corresponding ChIP Bigwig input files
+    #' @param chip_peaks_paths File paths to the corresponding ChIP peak input files
+    #' @param atac_signal_paths File paths to the corresponding ATAC Bigwig input files
+    #' @param atac_peaks_paths File paths to the corresponding ATAC peak input files
 		#' @note Relative file paths should work from the root directory of the package.
     #'  Generally not provided manually but set through build_data()
-		initialize = function(hic_path=NULL, tads_path=NULL, loops_path=NULL, 
-									pca_path=NULL, chip_paths=NULL){
-			if(!is.null(hic_path)){
+		initialize = function(genome_path=NULL, hic_path=NULL, tads_path=NULL, 
+      loops_path=NULL, pca_path=NULL, chip_signal_paths=NULL, chip_peaks_paths=NULL, 
+      atac_signal_paths=NULL, atac_peaks_paths=NULL){
+			if(!is.null(genome_path)){
+        genome = readr::read_tsv(genome_path, col_names=FALSE)
+        colnames(genome) = c("chr", "size")
+        genome = tibble::column_to_rownames(genome, "chr")
+        self$genome = genome
+        self$default_chr = rownames(self$genome)[1]
+				self$default_chr_length = self$genome[self$default_chr, "size"]
+        # Get chromosome names using rownames(genome)
+        # Get specific chromosome size using genome[chr, "size"]
+      }
+      if(!is.null(hic_path)){
 				self$hic = hic_path
 				self$hic_chrs = strawr::readHicChroms(hic_path)
 				hic_info = sort_by.data.frame(self$hic_chrs, self$hic_chrs$index)
@@ -72,8 +112,6 @@ BrowserData <- R6::R6Class(
 				self$hic_info = hic_info
 				self$resolutions = strawr::readHicBpResolutions(hic_path)
 				self$normalizations = strawr::readHicNormTypes(hic_path)
-				self$default_chr = hic_info$name[1]
-				self$default_chr_length = hic_info[self$default_chr, "length"]
         self$plot_types[["hic"]] = "Hi-C"
 			}
 			if(!is.null(tads_path)){
@@ -97,16 +135,82 @@ BrowserData <- R6::R6Class(
 				colnames(pca) = c("pChr", "pStart", "pEnd", "pScore")
 				self$pca = pca
 			}
-			if(!is.null(chip_paths)){
-				self$chip = read_coldata(bws=chip_paths, build="hg38")
+			if(!is.null(chip_signal_paths)){
+				self$chip_signal = read_coldata(bws=chip_signal_paths, build="hg38")
+        self$chip_signal[,"sample"] = unlist(lapply(self$chip_signal$bw_sample_names, 
+          function(x){strsplit(x, "_")[[1]][1]}))
+        self$chip_signal[,"mark"] = unlist(lapply(self$chip_signal$bw_sample_names, 
+          function(x){strsplit(x, "_")[[1]][2]}))
         self$plot_types[["chip"]] = "ChIP-seq"
+        marks = unique(self$chip_signal$mark)
+        marks = marks[-which(marks == "INPUT")]
+        self$chip_marks = marks
 			}
-			genes = genekitr::genInfo(org="human", hgVersion="v19", unique=TRUE)
+      if(!is.null(chip_peaks_paths)){
+        self$chip_peaks = list(broad=NULL, narrow=NULL)
+        cols = NULL
+        for(f in chip_peaks_paths){
+          base = strsplit(f, "/")[[1]]
+          split = strsplit(base[length(base)], "_")[[1]]
+          mark = split[1]
+          type = split[2]
+          # Need to force the read function to treat the samples column as characters otherwise it
+          #  will default to double
+          df = readr::read_tsv(f, col_names=TRUE, col_types=readr::cols(samples=readr::col_character()))
+          if(is.null(cols)){
+            cols = names(df)
+          }
+          else{
+            if(!identical(names(df), cols)){
+              stop(paste0("ChIP peak file ",f," column names do not match others. Ensure that 
+                all peak files have the same structure."))
+            }
+          }
+          df["mark"] = mark
+          self$chip_peaks[[type]] = rbind(self$chip_peaks[[type]], df)
+        }
+        if(!"chip" %in% names(self$plot_types)){
+          # This allows either signal or peaks to be added individually but requires that each
+          #  is also handled individually e.g. in plot draw functions 
+          self$plot_types[["chip"]] = "ChIP-seq"
+        }
+        
+      }
+      if(!is.null(atac_signal_paths)){
+				self$atac_signal = read_coldata(bws=atac_signal_paths, build="hg38")
+        #self$plot_types[["atac"]] = "ATAC-seq"
+			}
+      if(!is.null(atac_peaks_paths)){
+        self$atac_peaks = list()
+        cols = NULL
+        for(f in atac_peaks_paths){
+          base = strsplit(f, "/")[[1]]
+          split = strsplit(base[length(base)], "_")[[1]]
+          peakset = split[1]
+          type = split[2]
+          df = readr::read_tsv(f, col_names=TRUE)
+          if(is.null(cols)){
+            cols = names(df)
+          }
+          else{
+            if(!identical(names(df), cols)){
+              stop(paste0("ATAC peak file ",f," column names do not match others. Ensure that all 
+                peak files have the same structure."))
+            }
+          }
+          self$atac_peaks[[peakset]][[type]] = df
+        }
+        if(!"atac" %in% names(self$plot_types)){
+          #self$plot_types[["atac"]] = "ATAC-seq"
+        }
+      }
+			genes = genekitr::genInfo(org="human", hgVersion="v38", unique=TRUE)
 			# Rename columns so they don"t clash with other variables and are consistent
 			#  with other structures
-			names(genes)[names(genes) == c("chr", "start", "end")] = c("gChr",
+			names(genes)[which(names(genes) %in% c("chr", "start", "end"))] = c("gChr",
 				"gStart", "gEnd")
       genes = subset(genes, !is.na(gene_biotype))
+      genes$gChr = paste0("chr", genes$gChr)
 			genes$gStart = as.numeric(genes$gStart)
 			genes$gEnd = as.numeric(genes$gEnd)
 			genes$width = as.numeric(genes$width)

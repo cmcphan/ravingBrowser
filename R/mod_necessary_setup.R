@@ -13,9 +13,7 @@ mod_necessary_setup_ui <- function(id) {
   plot_types = browser_data$plot_types
   plot_selections = list()
   for(type in names(plot_types)){
-    if(!is.null(browser_data[[type]])){
-      plot_selections[[ plot_types[[type]] ]] = type
-    }
+    plot_selections[[ plot_types[[type]] ]] = type
   }
   tagList(
     tags$div(id='necessary_setup_controls',
@@ -67,7 +65,7 @@ mod_necessary_setup_server <- function(id){
       else{
         output$region_display = renderUI(HTML(paste0(
           tags$b("Currently active region:"),
-          tags$p(paste0("Chr ",region$chr,": ",region$start," - ",region$end))
+          tags$p(paste0(region$chr,": ",region$start," - ",region$end))
         )))
       }
     })

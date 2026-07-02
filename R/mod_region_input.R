@@ -18,7 +18,7 @@ mod_region_input_ui <- function(id) {
         selectInput(
           inputId = ns('region_chr'),
           label = 'Chromosome:',
-          choices = browser_data$hic_info$name,
+          choices = rownames(browser_data$genome),
           selected = browser_data$default_chr,
           multiple = FALSE
         ),
@@ -26,9 +26,9 @@ mod_region_input_ui <- function(id) {
           inputId = ns('region_size_slider'),
           label = 'Region limits (in base pairs):',
           min = 1,
-          max = browser_data$hic_info[browser_data$default_chr, 'length'],
+          max = browser_data$default_chr_length,
           value = c(1, browser_data$default_chr_length),
-          step = browser_data$hic_info[browser_data$default_chr, 'length'] / 5
+          step = browser_data$default_chr_length / 5
         ),
         actionButton(
           inputId = ns('toggle_region_size'),
@@ -72,7 +72,7 @@ mod_region_input_server <- function(id, current_tab){
     ns <- session$ns
  
     # Keep track of max bound of currently selected chromosome
-    current_max = reactive({ browser_data$hic_info[input$region_chr, 'length'] })
+    current_max = reactive({ browser_data$genome[input$region_chr, "size"] })
 
     observeEvent(input$region_size_slider, {
       updateSliderInput(

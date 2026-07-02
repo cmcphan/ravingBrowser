@@ -129,7 +129,7 @@ prev_configs, toolbar_config){
       }
       plot
     }, 
-      res = 96,
+      res = isolate(session$clientData$pixelratio*96),
       height = function(){
         height = plot_height()
         if(height <= 0.5){

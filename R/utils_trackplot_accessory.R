@@ -17,7 +17,7 @@
 #' @import data.table
 #' @importFrom parallel mclapply
 read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
-  input_type = "bw"){
+  input_type = "bw", verbose=TRUE){
   
   if(is.null(bws)){
     stop("Please provide paths to bigWig files")
@@ -25,7 +25,9 @@ read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
   
   input_type = match.arg(arg = input_type, choices = c("bw", "peak"))
   
-  message("Checking for files..")
+  if(verbose){
+    message("Checking for files..")
+  }
   bws = as.character(bws)
   lapply(bws, function(x){
     if(!file.exists(x)){
@@ -51,20 +53,21 @@ read_coldata = function(bws = NULL, sample_names = NULL, build = "hg38",
   
   attr(coldata, "refbuild") = build
   attr(coldata, "is_bw") =  input_type ==  "bw"
-  message("Input type: ", input_type)
-  message("Ref genome: ", build)
-  message("OK!")
-  
+  if(verbose){
+    message("Input type: ", input_type)
+    message("Ref genome: ", build)
+    message("OK!")
+  }
   coldata
 }
 
 gen_windows = function(chr = NA, start, end, window_size = 50, op_dir = getwd()){
   bins = seq(from=start, to=end, by=window_size)
-  window_dat = data.table::data.table(chr=paste0("chr",chr),
+  window_dat = data.table::data.table(chr=paste0(chr),
     start=bins[-length(bins)], end=bins[-1])
   largest_bin = bins[length(bins)]
   if(largest_bin < end){
-      window_dat = rbind(window_dat, data.frame(chr=paste0("chr",chr),
+      window_dat = rbind(window_dat, data.frame(chr=paste0(chr),
         start=largest_bin, end=end))
   }
 
@@ -80,12 +83,20 @@ gen_windows = function(chr = NA, start, end, window_size = 50, op_dir = getwd())
   temp_op_bed
 }
 
-
-get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
+# 10/04/26 - Added metric parameter to control which summary column to return
+# May need to add a parameter for a session/user ID to pass through which puts all generated
+#  files in a separate directory for that ID to make sure things don't get overwritten with multiple
+#  active users. That directory can then be deleted whenever a session ends.
+get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1, metric = "max"){
   op_dir = paste0(op_dir, "/")
   
   if(!dir.exists(paths = op_dir)){
     dir.create(path = op_dir, showWarnings = FALSE, recursive = TRUE)
+  }
+
+  if(!metric %in% c("min", "max", "mean", "median", "sum")){
+    stop("Metric must be one of \"min\", \"max\" (the default), \"mean\", \"median\" 
+      or \"sum\".")
   }
   
   summaries = parallel::mclapply(bigWigs, FUN = function(bw){
@@ -98,19 +109,28 @@ get_summaries = function(bedSimple, bigWigs, op_dir = getwd(), nthreads = 1){
   
   summary_list = lapply(summaries, function(x){
     x = data.table::fread(x)
-    colnames(x)[1] = 'chromosome'
-    x = x[,.(chromosome, start, end, size, max)]
-    if(all(is.na(x[,max]))){
+    idx = switch(
+      metric,
+      "min" = c(1,6),
+      "max" = c(1,7),
+      "mean" = c(1,8),
+      "median" = c(1,9),
+      "sum" = c(1,10)
+    )
+    colnames(x)[idx] = c("chromosome","metric")
+    cols = c("chromosome", "start", "end", "size", "metric")
+    x = x[,..cols]
+    if(all(is.na(x[,"metric"]))){
       message("No signal! Possible cause: chromosome name mismatch between bigWigs and
         queried loci.")
-      x[, max := 0]
+      x[, "metric" := 0]
     }
     x
   })
   
   #Remove intermediate files
   lapply(summaries, function(x) system(command = paste0("rm ", x), intern = TRUE))
-  system(command = paste0("rm ", bedSimple), intern = TRUE)
+  #system(command = paste0("rm ", bedSimple), intern = TRUE)
   
   names(summary_list) = gsub(pattern = "*\\.summary$", replacement = "",
     x = basename(path = unlist(summaries)))

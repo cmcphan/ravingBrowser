@@ -15,6 +15,10 @@ Generally not provided manually but set through build_data()
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{genome}}{String representing file path to genome file. Genome file
+should contain names and sizes for chromosomes to be visualised. Chromosome
+naming must be consistent with Hi-C data if present.}
+
 \item{\code{hic}}{String representing the file path to the .hic file}
 
 \item{\code{hic_chrs}}{Vector of strings enumerating the available chromosomes in the
@@ -38,8 +42,29 @@ default chromosome}
 domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
 scores) matching to the loaded HiC file}
 
-\item{\code{chip}}{Bigwig file information for ChIP datasets, used internally by
-\code{\link[=get_summaries]{get_summaries()}}}
+\item{\code{chip_signal}}{Bigwig file information for ChIP datasets, used internally by
+\code{\link[=get_summaries]{get_summaries()}}. Names should be of the form {sample}_{mark}.bigWig. Input samples
+should replace {mark} with INPUT.}
+
+\item{\code{chip_peaks}}{A list of strings describing filepaths to BED-like files containing
+called ChIP-seq peaks. These are outputs from bedtools multiinter which describe overlapping
+intervals between processed and cleaned called peaks across all samples for the same mark.
+File names should be of the form \verb{\{mark\}_\{broad/narrow\}_overlap.multiinter}. All files should
+have the same set of samples included. Any that don't include all samples should be processed
+with awk to add the remaining samples. A header line should be included.}
+
+\item{\code{chip_marks}}{A list of unique ChIP-seq marks included in the data.}
+
+\item{\code{atac_signal}}{Bigwig file information for ATAC datasets, used internally by
+\code{\link[=get_summaries]{get_summaries()}}. Names should be of the form {sample}.bigWig.}
+
+\item{\code{atac_peaks}}{A list of strings describing filepaths to BED files containing
+processed and cleaned called ATAC-seq peaks. Filenames should be of the form
+{peakset}_{broad/narrow}\emph{overlap.multiinter, where peakset may be any identifier to
+group files of the same set, e.g. method used. Peakset should not include any underscores
+(}) to enable proper name parsing. All files should have the same set of samples included.
+Any that don't include all samples should be processed with awk to add the remaining samples.
+A header line should be included.}
 
 \item{\code{genes}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
@@ -80,17 +105,23 @@ Create a new BrowserData object and build the data from the input
 files provided.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{BrowserData$new(
+  genome_path = NULL,
   hic_path = NULL,
   tads_path = NULL,
   loops_path = NULL,
   pca_path = NULL,
-  chip_paths = NULL
+  chip_signal_paths = NULL,
+  chip_peaks_paths = NULL,
+  atac_signal_paths = NULL,
+  atac_peaks_paths = NULL
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{genome_path}}{File path to the corresponding genome file}
+
 \item{\code{hic_path}}{File path to the corresponding HiC matrix input file}
 
 \item{\code{tads_path}}{File path to the corresponding topologically associated domain
@@ -100,7 +131,13 @@ input file}
 
 \item{\code{pca_path}}{File path to the corresponding PCA input file}
 
-\item{\code{chip_paths}}{File paths to the corresponding ChIP Bigwig input files}
+\item{\code{chip_signal_paths}}{File paths to the corresponding ChIP Bigwig input files}
+
+\item{\code{chip_peaks_paths}}{File paths to the corresponding ChIP peak input files}
+
+\item{\code{atac_signal_paths}}{File paths to the corresponding ATAC Bigwig input files}
+
+\item{\code{atac_peaks_paths}}{File paths to the corresponding ATAC peak input files}
 }
 \if{html}{\out{</div>}}
 }

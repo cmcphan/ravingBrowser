@@ -26,9 +26,9 @@ mod_configure_chip_ui <- function(id, session) {
     tags$div(id="chip_controls",
       tags$h3("ChIP-seq"),
       checkboxGroupInput(
-        inputId = ns("chip_samples"),
-        label = "Select any number of samples to plot:",
-        choices = browser_data$chip$bw_sample_names
+        inputId = ns("marks"),
+        label = "Select any number of marks to plot:",
+        choices = browser_data$chip_marks
       ),
       sliderInput(
         inputId = ns("resolution"),
@@ -67,7 +67,7 @@ mod_configure_chip_server <- function(id){
 
     return(
       list(
-        elements = reactive({ input$chip_samples }),
+        elements = reactive({ input$marks }),
         resolution = reactive({ input$resolution })
       )
     )

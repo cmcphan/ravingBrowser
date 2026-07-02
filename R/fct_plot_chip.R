@@ -2,13 +2,14 @@
 #'
 #' @description Generate a ChIP ribbon track built in ggplot2
 #'
-#' @param chr An integer value representing the chromosome of the region to be plotted.
-#' @param start,end Integer values representing the start and end coordinates
+#' @param c An integer value representing the cosome of the region to be plotted.
+#' @param s,e Integer values representing the start and end coordinates
 #'  (in base pairs) of the region to be plotted.
 #' @param resolution Size of the bins (in base pairs) for which summary statistics are
 #'  calculated from the bigWig files. A higher resolution (smaller bin size) will
 #'  result in a more detailed ribbon but will take longer to generate.
 #'  Defaults to 5000.
+#' @param mark List of ChIP-seq marks selected for display by the user.
 #' @param session Internal Shiny parameter containing session data.
 #'
 #' @return A list of ggplot2 objects showing ChIP signals for the specified samples
@@ -17,29 +18,86 @@
 #' @noRd
 #'
 #' @import ggplot2
-plot_chip <- function(chr, start, end, resolution, chip_samples, session) {
-  chip_query = paste0('chr',chr,':',start,'-',end)
-  bedfile = gen_windows(chr=chr, start=start, end=end, window_size=resolution)
-  bw = subset(browser_data$chip, bw_sample_names %in% chip_samples)
-  chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files)
+#' @importFrom scales hue_pal
+#' @importFrom ggblend blend
+#' @importFrom quickcode mix.color
+plot_chip <- function(c, s, e, resolution, marks, session) {
+  print("CHIP PLOTTING FUNCTION CALLED")
+  chip_query = paste0(c,':',s,'-',e)
+  bedfile = gen_windows(chr=c, start=s, end=e, window_size=resolution)
+  bw = subset(browser_data$chip_signal, mark %in% marks)
+  chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files, metric="mean")
   chip_signal_names = bw$bw_sample_names
-  plots = list()
-  for(i in 1:length(chip_signal_names)){
-    s = chip_signal_names[i]
-    clean_signal = subset(chip_signal[[i]], !is.na(max))
-    plots[[s]] = ggplot2::ggplot() +
-      ggplot2::geom_area(ggplot2::aes(x=start, y=max), data=clean_signal) +
-      ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE) +
-      ggplot2::labs(subtitle=s) +
+  samples = unique(bw$sample)
+  bw_input = subset(browser_data$chip_signal, sample %in% samples & mark=="INPUT")
+  input_signal = get_summaries(bedSimple=bedfile, bigWigs=bw_input$bw_files, metric="mean")
+  # Remove temporary bedfile now that we have no more use for it. This is ripped from the get_summaries
+  #  function, where it was originally
+  system(command = paste0("rm ", bedfile), intern = TRUE)
+  COLOURS = list()
+  scaleVals = sort(unique(browser_data$chip_peaks$broad[["samples"]]))
+  scaleVals = unique(c(scaleVals, unique(browser_data$chip_peaks$narrow[["samples"]])))
+  singles = unique(unlist(lapply(scaleVals, function(x){strsplit(x, split=",")[[1]]})))
+  scale = scales::hue_pal()(length(singles))
+  for(i in 1:length(singles)){
+    if(!singles[i] %in% names(COLOURS)){
+      COLOURS[[singles[i]]] = scale[i]
+    }
+  }
+  for(i in 1:length(scaleVals)){
+    split = strsplit(scaleVals[i], split=",")[[1]]
+    if(length(split) > 1){
+      blend = NULL
+      for(x in split){
+        blend = c(blend, COLOURS[[x]])
+      }
+      COLOURS[[scaleVals[i]]] = quickcode::mix.color(blend)
+    }
+  }
+  plots = sapply(marks, function(m){
+    delta_signal = list()
+    for(sample in unique(subset(bw, mark==m)[["sample"]])){
+      delta_signal[[sample]] = chip_signal[[paste(sample, m, sep="_")]]
+      #delta_signal[[sample]][,"sample"] = sample
+      #delta_signal[[sample]][,"metric"] = delta_signal[[sample]][["metric"]] - 
+      #  input_signal[[paste(sample, "INPUT", sep="_")]][["metric"]]
+      #delta_signal[[sample]][,"metric"] = delta_signal[[sample]][["metric"]] /
+      #  max(delta_signal[[sample]][["metric"]])
+    }
+    peaksBroad = subset(browser_data$chip_peaks$broad, mark==m & chr==c & ((end >= s & start <= s) | 
+      (start <= e & end >= e) | (start >= s & end <= e)))
+    peaksNarrow = subset(browser_data$chip_peaks$narrow, mark==m & chr==c & ((end >= s & start <= s) | 
+      (start <= e & end >= e) | (start >= s & end <= e)))
+    # Calculate peak block positions
+    maxVal = max(unlist(lapply(delta_signal, function(df){ max(df[,"metric"]) }))) # Get max signal value
+    broadBlockMin = maxVal*1.05
+    broadBlockMax = maxVal*1.15
+    narrowBlockMin = maxVal*1.20
+    narrowBlockMax = maxVal*1.30
+    plot = ggplot2::ggplot() +
+      lapply(names(delta_signal), function(n){ggplot2::geom_area(ggplot2::aes(x=start, y=metric, 
+        fill=n), alpha=0.5, data=delta_signal[[n]])}) |> ggblend::blend("lighten") +
+      ggplot2::geom_rect(data=peaksBroad, ggplot2::aes(xmin=start, xmax=end, ymin=maxVal, 
+        ymax=broadBlockMax, fill=samples), alpha=1) +
+      ggplot2::geom_rect(data=peaksNarrow, ggplot2::aes(xmin=start, xmax=end, ymin=narrowBlockMin, 
+        ymax=narrowBlockMax, fill=samples), alpha=1) +
+      ggplot2::coord_cartesian(xlim=c(s, e), expand=FALSE) +
+      {if(m==marks[1]) ggplot2::scale_fill_manual(name="Sample",values=COLOURS)
+      else ggplot2::scale_fill_manual(guide="none", values=COLOURS)} +
+      #ggplot2::scale_fill_manual(guide="none", values=COLOURS) +
+      ggplot2::labs(subtitle=m) +
       ggplot2::theme(aspect.ratio=0.1,
         panel.background=ggplot2::element_blank(),
         plot.margin=ggplot2::margin(0, 0, 0, 0),
-        axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
-        axis.text.y=ggplot2::element_blank()
+        axis.text.y=ggplot2::element_blank(),
+        axis.title=ggplot2::element_blank(),
+        plot.subtitle=ggplot2::element_text(vjust=-3),
+        text=ggplot2::element_text(size=9/session$clientData$pixelratio)
       )
-    session$userData$plot_heights[[paste0("chip-",s)]] = 0.1
-  }
+    session$userData$plot_heights[[paste0("chip-",m)]] = 0.1
+    return(plot)
+  }, USE.NAMES=TRUE)
   rm(bw)
   rm(chip_signal)
   return(plots)

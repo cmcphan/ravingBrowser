@@ -32,12 +32,17 @@ plot_genes <- function(chr, start, end, elements, session){
   max_y = max(genes$y_offset)
   plot = ggplot2::ggplot(data = genes,
     ggplot2::aes(xmin=gStart, xmax=gEnd, y=-y_offset, label=symbol, 
-      forward=strand, fill=gene_biotype)) +
+      forward=strand, fill=gene_biotype)
+    ) +
     gggenes::geom_gene_arrow(arrowhead_height=unit(6, 'mm'), 
-      arrowhead_width=unit(1, 'mm'), arrow_body_height=unit(6, 'mm')) +
-    gggenes::geom_gene_label(align='left') + 
+      arrowhead_width=unit(1, 'mm'), 
+      arrow_body_height=unit(6, 'mm')
+    ) +
+    gggenes::geom_gene_label(align='left'
+    ) + 
     ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(-max_y-0.5, 0.5), 
-      expand=FALSE) + 
+      expand=FALSE
+    ) + 
     ggplot2::theme(aspect.ratio=0.0225+(0.02*max_y),
       axis.line.x=ggplot2::element_blank(), 
       axis.ticks.x=ggplot2::element_blank(), 
@@ -46,7 +51,8 @@ plot_genes <- function(chr, start, end, elements, session){
       axis.ticks.y=ggplot2::element_blank(), 
       axis.title.y=ggplot2::element_blank(),
       legend.title=ggplot2::element_blank(), 
-      panel.background=ggplot2::element_blank())
+      panel.background=ggplot2::element_blank()
+    )
   nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
   yOffsetAspectRatio = 0.0225+(0.02*max_y)
   if(yOffsetAspectRatio > nBiotypesAspectRatio){
