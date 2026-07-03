@@ -87,8 +87,12 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
     }
 
     plotted_region = reactiveVal(NULL)
-    observeEvent(basic_config$draw_plots(), {
+    observeEvent({basic_config$draw_plots() | toolbar_config$update_plots() |
+      session$userData$regionChange()}, {
       if(!shiny::isTruthy(session$userData$region())){
+        return()
+      }
+      if(basic_config$draw_plots()==0 & toolbar_config$update_plots()==0){
         return()
       }
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
@@ -100,7 +104,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       }
 
       config = build_config()
-      if(identical(config, prev_configs[["chip"]]) | !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["chip"]]) | !config$selected){
         return()
       }
       draw_plots(config)
@@ -109,36 +113,18 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       return()
     })
 
-    observeEvent(session$userData$activeRegion(), {
-      if(length(reactiveValuesToList(config)) == 0){
-        return()
-      }
-      region = isolate(session$userData$activeRegion())
-      config$chr = region$chr
-      config$start = region$start
-      config$end = region$end
-      width = config$end - config$start
-      config$resolution = as.integer(width / plot_config$resolution())
-      if(identical(config, prev_configs[["chip"]]) | !config$selected){
-        return()
-      }
-      draw_plots(config)
-      prev_configs[["chip"]] = reactiveValuesToList(config)
-      return()
-    })
-
-    observeEvent(toolbar_config$update_plots(), {
-      if(length(reactiveValuesToList(config)) == 0){
-        return()
-      }
-      config = build_config()
-      if(identical(config, prev_configs[["chip"]]) | !config$selected){
-        return()
-      }
-      draw_plots(config)
-      prev_configs[["chip"]] = reactiveValuesToList(config)
-      return()
-    })
+    #observeEvent(toolbar_config$update_plots(), {
+    #  if(length(reactiveValuesToList(config)) == 0){
+    #    return()
+    #  }
+    #  config = build_config()
+    #  if(identical(config, prev_configs[["chip"]]) | !config$selected){
+    #    return()
+    #  }
+    #  draw_plots(config)
+    #  prev_configs[["chip"]] = reactiveValuesToList(config)
+    #  return()
+    #})
   })
 }
     

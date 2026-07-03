@@ -70,7 +70,6 @@ mod_necessary_setup_server <- function(id){
       }
     })
     
-
     observeEvent(input$draw_plots,{
       if(!shiny::isTruthy(session$userData$region())){
         shiny::showNotification(
@@ -81,12 +80,11 @@ mod_necessary_setup_server <- function(id){
           type = 'error',
           session = session
         )
-        session$userData$plot_redraw = FALSE
         return()
       }
       else{
         session$userData$activeRegion(session$userData$region())
-        session$userData$plot_redraw = TRUE
+        session$userData$regionChange(session$userData$regionChange()+1)
       }
     }, priority = 1)
 

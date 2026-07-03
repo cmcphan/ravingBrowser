@@ -25,9 +25,10 @@ app_server <- function(input, output, session) {
   session$userData$region = reactiveVal(NULL)
   # This represents the current region shown in the plots
   session$userData$activeRegion = reactiveVal(NULL)
+  # Counter that ticks up for each region change, used to trigger plot draws
+  #  like buttons
+  session$userData$regionChange = reactiveVal(0)
   session$userData$plot_heights = reactiveValues()
-  session$userData$brush_zoom = reactiveVal(NULL)
-  session$userData$plot_redraw = TRUE
   
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`

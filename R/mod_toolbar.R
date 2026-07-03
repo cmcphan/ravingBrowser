@@ -127,7 +127,7 @@ mod_toolbar_server <- function(id){
         zoomed_region = NULL
       }
       session$userData$activeRegion(zoomed_region)
-      session$userData$plot_redraw = TRUE
+      session$userData$regionChange(session$userData$regionChange()+1)
     }, priority = 1)
 
     observeEvent(input$zoom_out, {
@@ -137,11 +137,12 @@ mod_toolbar_server <- function(id){
         zoomed_region = NULL
       }
       session$userData$activeRegion(zoomed_region)
-      session$userData$plot_redraw = TRUE
+      session$userData$regionChange(session$userData$regionChange()+1)
     }, priority = 1)
 
     observeEvent(input$update_plots, {
-      session$userData$plot_redraw = TRUE
+      session$userData$activeRegion(session$userData$region())
+      session$userData$regionChange(session$userData$regionChange()+1)
     }, priority = 1)
 
     return(

@@ -22,7 +22,6 @@
 #' @importFrom ggblend blend
 #' @importFrom quickcode mix.color
 plot_chip <- function(c, s, e, resolution, marks, session) {
-  print("CHIP PLOTTING FUNCTION CALLED")
   chip_query = paste0(c,':',s,'-',e)
   bedfile = gen_windows(chr=c, start=s, end=e, window_size=resolution)
   bw = subset(browser_data$chip_signal, mark %in% marks)

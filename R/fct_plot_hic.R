@@ -25,7 +25,6 @@
 #' importFrom strawr straw
 plot_hic <- function(chr, start, end, resolution, normalization='KR',
                 format='triangular', session){
-  print("HIC PLOTTING FUNCTION CALLED")
   hic_path = browser_data$hic
   if(format == 'square'){
     strawr_query = paste(chr,start,end, sep=':')

@@ -67,9 +67,6 @@ prev_configs, toolbar_config){
       if(!shiny::isTruthy(session$userData$region())){
         return()
       }
-      if(!session$userData$plot_redraw){
-        return()
-      }
       shinycssloaders::showSpinner("patchwork")
       shinyjs::addClass(selector="#plot_1-patchwork", class="recalculating")
     }, priority = 1)
@@ -77,10 +74,16 @@ prev_configs, toolbar_config){
     observeEvent({basic_config$draw_plots() | toolbar_config$zoom_in() |
       toolbar_config$zoom_out() | toolbar_config$update_plots() | 
       input$brush_zoom}, {
-      if(!shiny::isTruthy(session$userData$region())){
+      if(basic_config$draw_plots()==0 & toolbar_config$zoom_in()==0 &
+        toolbar_config$zoom_out()==0 & toolbar_config$update_plots()==0 &
+        input$brush_zoom==0){
+        shinycssloaders::hideSpinner("patchwork")
+        shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
         return()
       }
-      if(!session$userData$plot_redraw){
+      if(!shiny::isTruthy(session$userData$region())){
+        shinycssloaders::hideSpinner("patchwork")
+        shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
         return()
       }
       plotlist = isolate(reactiveValuesToList(current_plots))
@@ -92,7 +95,6 @@ prev_configs, toolbar_config){
       }
       if(length(plotlist_clean) == 0){
         session$userData$patchwork_plot(NULL)
-        shinycssloaders::hideSpinner("patchwork")
       }
       else if(length(plotlist_clean) == 1){
         session$userData$patchwork_plot(plotlist_clean[[1]])
@@ -104,6 +106,8 @@ prev_configs, toolbar_config){
         )
         session$userData$patchwork_plot(plot)
       }
+      shinycssloaders::hideSpinner("patchwork")
+      shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
       rm(plotlist)
       rm(plotlist_clean)
     }, priority = -1)
@@ -152,7 +156,6 @@ prev_configs, toolbar_config){
           type = 'error',
           session = session
         )
-        session$userData$plot_redraw = FALSE
         return()
       }
       if(brush_coords[1] < 0){
@@ -171,7 +174,6 @@ prev_configs, toolbar_config){
           type = 'error',
           session = session
         )
-        session$userData$plot_redraw = FALSE
         return()
       }
       region = isolate(session$userData$activeRegion())
@@ -187,7 +189,7 @@ prev_configs, toolbar_config){
         width = newEnd - newStart
       )
       session$userData$activeRegion(zoomed_region)
-      session$userData$plot_redraw = TRUE
+      session$userData$regionChange(session$userData$regionChange()+1)
     }, priority=1)
   })
 }

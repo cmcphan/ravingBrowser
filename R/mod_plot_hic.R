@@ -87,8 +87,12 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       }
     }
 
-    observeEvent(basic_config$draw_plots(), {
+    observeEvent({basic_config$draw_plots() | toolbar_config$update_plots() |
+      session$userData$regionChange()}, {
       if(!shiny::isTruthy(session$userData$activeRegion())){
+        return()
+      }
+      if(basic_config$draw_plots()==0 & toolbar_config$update_plots()==0){
         return()
       }
       if(!('hic' %in% isolate(basic_config$plot_type_select()))){
@@ -102,7 +106,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       }
 
       config = build_config()
-      if(identical(config, prev_configs[["hic"]]) | !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["hic"]]) | !config$selected){
         return()
       }
       draw_plots(config)
@@ -110,34 +114,18 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       return()
     })
 
-    observeEvent(session$userData$activeRegion(), {
-      if(length(reactiveValuesToList(config)) == 0){
-        return()
-      }
-      region = isolate(session$userData$activeRegion())
-      config$chr = region$chr
-      config$start = region$start
-      config$end = region$end
-      if(identical(config, prev_configs[["hic"]]) | !config$selected){
-        return()
-      }
-      draw_plots(config)
-      prev_configs[["hic"]] = reactiveValuesToList(config)
-      return()
-    })
-
-    observeEvent(toolbar_config$update_plots(), {
-      if(length(reactiveValuesToList(config)) == 0){
-        return()
-      }
-      config = build_config()
-      if(identical(config, prev_configs[["hic"]]) | !config$selected){
-        return()
-      }
-      draw_plots(config)
-      prev_configs[["hic"]] = reactiveValuesToList(config)
-      return()
-    })
+    #observeEvent(toolbar_config$update_plots(), {
+    #  if(length(reactiveValuesToList(config)) == 0){
+    #    return()
+    #  }
+    #  config = build_config()
+    #  if(identical(config, prev_configs[["hic"]]) | !config$selected){
+    #    return()
+    #  }
+    #  draw_plots(config)
+    #  prev_configs[["hic"]] = reactiveValuesToList(config)
+    #  return()
+    #})
   })  
 }
     
