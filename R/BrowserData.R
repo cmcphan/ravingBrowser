@@ -39,9 +39,9 @@
 #'  processed and cleaned called ATAC-seq peaks. Filenames should be of the form 
 #'  {peakset}_{broad/narrow}_overlap.multiinter, where peakset may be any identifier to 
 #'  group files of the same set, e.g. method used. Peakset should not include any underscores
-#'  (_) to enable proper name parsing. All files should have the same set of samples included. 
-#'  Any that don't include all samples should be processed with awk to add the remaining samples.
-#'  A header line should be included.
+#'  (_) to enable proper name parsing. All files should have the same set of samples included, and
+#'  samples should match those in the atac_signal filenames. Any that don't include all samples 
+#'  should be processed with awk to add the remaining samples. A header line should be included.
 #' @field genes Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
 #' @field gene_feature_counts Named vector of unique gene biotypes from `genes` data
@@ -178,7 +178,9 @@ BrowserData <- R6::R6Class(
       }
       if(!is.null(atac_signal_paths)){
 				self$atac_signal = read_coldata(bws=atac_signal_paths, build="hg38")
-        #self$plot_types[["atac"]] = "ATAC-seq"
+        self$atac_signal[,"sample"] = unlist(lapply(self$atac_signal$bw_sample_names, 
+          function(x){strsplit(x, "_")[[1]][1]}))
+        self$plot_types[["atac"]] = "ATAC-seq"
 			}
       if(!is.null(atac_peaks_paths)){
         self$atac_peaks = list()
@@ -201,7 +203,7 @@ BrowserData <- R6::R6Class(
           self$atac_peaks[[peakset]][[type]] = df
         }
         if(!"atac" %in% names(self$plot_types)){
-          #self$plot_types[["atac"]] = "ATAC-seq"
+          self$plot_types[["atac"]] = "ATAC-seq"
         }
       }
 			genes = genekitr::genInfo(org="human", hgVersion="v38", unique=TRUE)

@@ -28,11 +28,11 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
   chip_signal = get_summaries(bedSimple=bedfile, bigWigs=bw$bw_files, metric="mean")
   chip_signal_names = bw$bw_sample_names
   samples = unique(bw$sample)
-  bw_input = subset(browser_data$chip_signal, sample %in% samples & mark=="INPUT")
-  input_signal = get_summaries(bedSimple=bedfile, bigWigs=bw_input$bw_files, metric="mean")
+  #bw_input = subset(browser_data$chip_signal, sample %in% samples & mark=="INPUT")
+  #input_signal = get_summaries(bedSimple=bedfile, bigWigs=bw_input$bw_files, metric="mean")
   # Remove temporary bedfile now that we have no more use for it. This is ripped from the get_summaries
-  #  function, where it was originally
-  system(command = paste0("rm ", bedfile), intern = TRUE)
+  #  function, where it was originally and modified to run asynchronously
+  system(command = paste0("rm ", bedfile), intern = FALSE, wait=FALSE)
   COLOURS = list()
   scaleVals = sort(unique(browser_data$chip_peaks$broad[["samples"]]))
   scaleVals = unique(c(scaleVals, unique(browser_data$chip_peaks$narrow[["samples"]])))

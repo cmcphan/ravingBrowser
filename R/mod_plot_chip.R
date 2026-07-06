@@ -36,11 +36,6 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    # Initialize and set plot order
-    for(m in browser_data$chip$chip_marks){
-      current_plots[[paste0("chip-",m)]] = NULL
-    }
-
     config = reactiveValues()
     build_config = function(){
       region = isolate(session$userData$activeRegion())
@@ -64,7 +59,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
     draw_plots = function(config){
       if(length(config$marks) == 0){
         prev_configs[["chip"]] = config
-        for(m in browser_data$chip$chip_marks){
+        for(m in browser_data$chip_marks){
           current_plots[[paste0("chip-",m)]] = NULL
           session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
@@ -72,7 +67,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       }
       
       # Reset any deselected plots
-      for(m in browser_data$chip$chip_marks){
+      for(m in browser_data$chip_marks){
         if(!(m %in% config$marks)){
           current_plots[[paste0("chip-",m)]] = NULL
           session$userData$plot_heights[[paste0("chip-",m)]] = 0
@@ -86,7 +81,6 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       }
     }
 
-    plotted_region = reactiveVal(NULL)
     observeEvent({basic_config$draw_plots() | toolbar_config$update_plots() |
       session$userData$regionChange()}, {
       if(!shiny::isTruthy(session$userData$region())){
@@ -96,7 +90,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
-        for(m in browser_data$chip$chip_marks){
+        for(m in browser_data$chip_marks){
           current_plots[[paste0("chip-",m)]] = NULL
           session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
@@ -104,27 +98,14 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["chip"]]) | !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["chip"]]) | 
+        !config$selected){
         return()
       }
       draw_plots(config)
       prev_configs[["chip"]] = reactiveValuesToList(config)
-      plotted_region(list(chr = config$chr, start = config$start, end = config$end))
       return()
     })
-
-    #observeEvent(toolbar_config$update_plots(), {
-    #  if(length(reactiveValuesToList(config)) == 0){
-    #    return()
-    #  }
-    #  config = build_config()
-    #  if(identical(config, prev_configs[["chip"]]) | !config$selected){
-    #    return()
-    #  }
-    #  draw_plots(config)
-    #  prev_configs[["chip"]] = reactiveValuesToList(config)
-    #  return()
-    #})
   })
 }
     

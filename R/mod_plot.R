@@ -106,8 +106,6 @@ prev_configs, toolbar_config){
         )
         session$userData$patchwork_plot(plot)
       }
-      shinycssloaders::hideSpinner("patchwork")
-      shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
       rm(plotlist)
       rm(plotlist_clean)
     }, priority = -1)
@@ -131,6 +129,8 @@ prev_configs, toolbar_config){
         post_panel = sum(w_px)-pre_panel
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
       }
+      shinycssloaders::hideSpinner("patchwork")
+      shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
       plot
     }, 
       res = isolate(session$clientData$pixelratio*96),

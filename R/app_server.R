@@ -34,18 +34,18 @@ app_server <- function(input, output, session) {
   # Access using `{type}_config`
   # Call all plot server functions to set up reactivity web
   for(type in names(browser_data$plot_types)){
-    assign(paste0(type,'_config'),
-      get(paste0('mod_configure_',type,'_server'))(paste0('configure_',type,'_1')))
+    assign(paste0(type,"_config"),
+      get(paste0("mod_configure_",type,"_server"))(paste0("configure_",type,"_1")))
   }
   plot_configs = list()
   # This needs to be done with lapply to avoid lazy evaluation handing the last
   #  plot config to all server functions. The above doesn't work properly with lapply
   #  for some reason so leave it in the for loop
   lapply(names(browser_data$plot_types), function(type){
-    get(paste0('mod_plot_',type,'_server'))(paste0('plot_',type,'_1'), 
-          basic_config, get(paste0(type,'_config')), current_plots, 
+    get(paste0("mod_plot_",type,"_server"))(paste0("plot_",type,"_1"), 
+          basic_config, get(paste0(type,"_config")), current_plots, 
           prev_configs, toolbar_config)
-    plot_configs[[type]] = get(paste0(type,'_config'))
+    plot_configs[[type]] = get(paste0(type,"_config"))
   })
   mod_plot_server("plot_1", basic_config, current_plots, plot_configs, prev_configs, 
     toolbar_config)
@@ -56,15 +56,15 @@ app_server <- function(input, output, session) {
 		new_selections = plot_types()[!plot_types() %in% prev_types]
 		deselected = prev_types[!prev_types %in% plot_types()]
 		for(type in new_selections){
-			insertUI(selector=place_ui(type, plot_types()), where='afterEnd',
-				ui=get(paste0('mod_configure_',type,'_ui'))(paste0('configure_',type,'_1'), 
+			insertUI(selector=place_ui(type, plot_types()), where="afterEnd",
+				ui=get(paste0("mod_configure_",type,"_ui"))(paste0("configure_",type,"_1"), 
           session))
 		}
 
 		for(type in deselected){
-			removeUI(paste0('#', type, '_controls'))
+			removeUI(paste0("#", type, "_controls"))
 			for(name in names(session$userData$plots)){
-				if(startsWith(name, paste0(type, '-'))){
+				if(startsWith(name, paste0(type, "-"))){
 					session$userData$plots[[name]] = NULL
 				}
 			}
@@ -78,7 +78,7 @@ app_server <- function(input, output, session) {
       return()
     }
     shiny::removeNotification(
-      id = 'region_notif',
+      id = "region_notif",
       session = session
     )
 	})

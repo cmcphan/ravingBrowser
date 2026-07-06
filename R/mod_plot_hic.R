@@ -36,11 +36,6 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    # Initialize and set plot order
-    current_plots[["hic-hic"]] = NULL
-    current_plots[["hic-loops"]] = NULL
-    current_plots[["hic-pca"]] = NULL
-
     config = reactiveValues()
     build_config = function(){
       region = isolate(session$userData$activeRegion())
@@ -113,19 +108,6 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       prev_configs[["hic"]] = reactiveValuesToList(config)
       return()
     })
-
-    #observeEvent(toolbar_config$update_plots(), {
-    #  if(length(reactiveValuesToList(config)) == 0){
-    #    return()
-    #  }
-    #  config = build_config()
-    #  if(identical(config, prev_configs[["hic"]]) | !config$selected){
-    #    return()
-    #  }
-    #  draw_plots(config)
-    #  prev_configs[["hic"]] = reactiveValuesToList(config)
-    #  return()
-    #})
   })  
 }
     
