@@ -90,7 +90,7 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
         return()
       }
       if(!("atac" %in% isolate(basic_config$plot_type_select()))){
-        for(p in browser_data$atac_peaks){
+        for(p in names(browser_data$atac_peaks)){
           current_plots[[paste0("atac-",p)]] = NULL
           session$userData$plot_heights[[paste0("atac-",p)]] = 0
         }

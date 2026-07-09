@@ -128,7 +128,7 @@ mod_region_input_server <- function(id, current_tab){
       value = input$region_size_slider
       if(value[2] == value[1]){
         shinyFeedback::showFeedbackDanger('region_size_slider', session=session,
-          text='Region cannot be 0 base pairs long')
+          text='Region cannot be 0 base pairs long.')
       }
       else{
         shinyFeedback::hideFeedback('region_size_slider', session)

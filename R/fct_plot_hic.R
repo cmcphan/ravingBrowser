@@ -44,7 +44,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+        text=ggplot2::element_text(size=4.5),
+        legend.key.size=grid::unit(10, "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 1
   }
@@ -66,7 +67,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+        text=ggplot2::element_text(size=4.5),
+        legend.key.size=grid::unit(10, "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
@@ -88,7 +90,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=11/session$clientData$pixelratio)
+        text=ggplot2::element_text(size=4.5),
+        legend.key.size=grid::unit(10, "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
@@ -160,12 +163,20 @@ draw_tads <- function(plot, chr, start, end){
 #' @import ggraph
 #' @importFrom tidygraph tbl_graph
 plot_loops <- function(chr, start, end, session){
-  included_cis_loops = subset(browser_data$loops, (lChr1==chr & lChr2==chr) &
-                        ((from>=start & to<=start) | (from<=end & to>=end) |
-                        (from>=start & to<=end)))[c('from', 'to', 'lDist', 'lPval')]
+  # Loops should have been filtered to exclude any trans chromosomal interactions, so we
+  #  only need to check the chr of one bin
+  included_cis_loops = subset(browser_data$loops, bait_chr==chr &
+                        ((from>=start & to<=end) |
+                        (from<=start & to<=end & to>start) | 
+                        (from<=end & from>start & to>=end))
+                        )[c("from", "to", "dist", "score", "support")]
   if(nrow(included_cis_loops) == 0){
     return(NULL)
   }
+  # This filtering for long loops should possibly be relegated to a tick box option to
+  #  support following these long loops where they occur
+  region_width = end-start
+  included_cis_loops = subset(included_cis_loops, dist <= region_width*2)
   nodes = data.frame(bin = sort(unique(rbind(included_cis_loops$from,
     included_cis_loops$to))))
   edges = data.frame(included_cis_loops)
@@ -174,15 +185,15 @@ plot_loops <- function(chr, start, end, session){
   loop_graph = tidygraph::tbl_graph(nodes = nodes, edges = edges)
   loop_layout = ggraph::create_layout(loop_graph, layout='linear', sort.by=bin,
     use.numeric=TRUE)
-  min_pval = min(included_cis_loops['lPval'])
   plot = ggraph::ggraph(loop_layout) +
-    ggraph::geom_edge_arc0(ggplot2::aes(alpha=min_pval/lPval), strength = -1) +
+    ggraph::geom_edge_arc0(ggplot2::aes(colour=support), strength=1, width=0.25) +
     ggraph::theme_graph(plot_margin=ggplot2::margin(0, 0, 0, 0),
       base_family='sans') +
-    ggplot2::theme(aspect.ratio=0.05, 
-      text=ggplot2::element_text(size=11/session$clientData$pixelratio)) +
+    ggplot2::theme(aspect.ratio=0.1, 
+      text=ggplot2::element_text(size=4.5),
+      legend.key.size=grid::unit(10, "points")) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
-  session$userData$plot_heights[["hic-loops"]] = 0.05
+  session$userData$plot_heights[["hic-loops"]] = 0.1
   rm(included_cis_loops)
   rm(nodes)
   rm(edges)

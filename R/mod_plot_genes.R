@@ -34,9 +34,6 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
-    # Initialize and set plot order
-    current_plots[["genes-gene_track"]] = NULL
-
     config = reactiveValues()
     build_config = function(){
       region = session$userData$activeRegion()

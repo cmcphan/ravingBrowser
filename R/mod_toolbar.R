@@ -140,10 +140,10 @@ mod_toolbar_server <- function(id){
       session$userData$regionChange(session$userData$regionChange()+1)
     }, priority = 1)
 
-    observeEvent(input$update_plots, {
-      session$userData$activeRegion(session$userData$region())
-      session$userData$regionChange(session$userData$regionChange()+1)
-    }, priority = 1)
+    #observeEvent(input$update_plots, {
+    #  session$userData$activeRegion(session$userData$region())
+    #  session$userData$regionChange(session$userData$regionChange()+1)
+    #}, priority = 1)
 
     return(
       list(

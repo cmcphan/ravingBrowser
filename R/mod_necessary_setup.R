@@ -8,6 +8,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom shinyFeedback showFeedbackWarning hideFeedback
 mod_necessary_setup_ui <- function(id) {
   ns <- NS(id)
   plot_types = browser_data$plot_types
@@ -31,6 +32,9 @@ mod_necessary_setup_ui <- function(id) {
       ),
       htmlOutput(
         outputId = ns("region_display")
+      ),
+      htmlOutput(
+        outputId = ns("region_warning")
       ),
       actionButton(
         inputId = ns('draw_plots'),
@@ -67,6 +71,15 @@ mod_necessary_setup_server <- function(id){
           tags$b("Currently active region:"),
           tags$p(paste0(region$chr,": ",region$start," - ",region$end))
         )))
+      }
+      if(!identical(region, session$userData$region())){
+        output$region_warning = renderUI(HTML(paste0(
+          tags$em("Plotted region different from selection. Use the update plots button in 
+            toolbar to preserve region changes.", style="color:red")
+        )))
+      }
+      else{
+        output$region_warning = NULL
       }
     })
     

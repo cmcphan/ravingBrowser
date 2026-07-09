@@ -20,9 +20,11 @@
 #'  initializing UI elements - set as the first listed chromosome in hic_info
 #' @field default_chr_length Double enumerating the length in base pairs of the
 #'  default chromosome
-#' @field tads,loops,pca Data frames containing data for topologically associated
-#'  domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+#' @field tads,pca Data frames containing data for topologically associated
+#'  domains (TADs) and A/B compartmentalization scores (i.e. PCA
 #'  scores) matching to the loaded HiC file
+#' @field loops TSV file describing called loops matching the HiC data. This should be
+#'  filtered to exclude trans interactions (i.e. bait and oef bins on different chromosomes)
 #' @field chip_signal Bigwig file information for ChIP datasets, used internally by
 #'  [get_summaries()]. Names should be of the form {sample}_{mark}.bigWig. Input samples
 #'  should replace {mark} with INPUT.
@@ -121,13 +123,13 @@ BrowserData <- R6::R6Class(
 			}
 			if(!is.null(loops_path)){
 				loops = readr::read_tsv(loops_path, col_names=FALSE)
-				colnames(loops) = c("lChr1", "lStart1", "lEnd1", "lChr2", "lStart2",
-					"lEnd2", "lPval")
+				colnames(loops) = c("bait_chr", "bait_start", "bait_end", "bait_id", "oef_chr", "oef_start",
+          "oef_end", "oef_id", "reads", "score", "region_id", "rep", "interaction", "support")
 				# Simplify loop coordinates by taking the middle of each bin as our node
 				#  position
-				loops$from = (loops$lEnd1+loops$lStart1)/2
-				loops$to = (loops$lEnd2+loops$lStart2)/2
-				loops$lDist = loops$to - loops$from
+				loops$from = (loops$bait_end+loops$bait_start)/2
+				loops$to = (loops$oef_end+loops$oef_start)/2
+				loops$dist = loops$to - loops$from
 				self$loops = loops
 			}
 			if(!is.null(pca_path)){

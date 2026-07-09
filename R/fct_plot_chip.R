@@ -92,7 +92,8 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
         axis.text.y=ggplot2::element_blank(),
         axis.title=ggplot2::element_blank(),
         plot.subtitle=ggplot2::element_text(vjust=-3),
-        text=ggplot2::element_text(size=9/session$clientData$pixelratio)
+        text=ggplot2::element_text(size=4.5),
+        legend.key.size=grid::unit(10, "points")
       )
     session$userData$plot_heights[[paste0("chip-",m)]] = 0.1
     return(plot)

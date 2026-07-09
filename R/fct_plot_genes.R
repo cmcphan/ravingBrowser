@@ -17,8 +17,8 @@
 plot_genes <- function(chr, start, end, elements, session){
   included_genes = subset(browser_data$genes, gene_biotype %in% elements)
   included_genes = subset(included_genes, 
-    gChr==chr & ((gEnd >= start & gStart <= start) | 
-    (gStart <= end & gEnd >= end) | 
+    gChr==chr & ((gEnd >= start & gEnd<end & gStart <= start) | 
+    (gStart <= end & gStart>start & gEnd >= end) | 
     (gStart >= start & gEnd <= end))
   )
   if(nrow(included_genes) == 0){
@@ -34,16 +34,13 @@ plot_genes <- function(chr, start, end, elements, session){
     ggplot2::aes(xmin=gStart, xmax=gEnd, y=-y_offset, label=symbol, 
       forward=strand, fill=gene_biotype)
     ) +
-    gggenes::geom_gene_arrow(arrowhead_height=unit(6, 'mm'), 
+    gggenes::geom_gene_arrow(arrowhead_height=unit(3, 'mm'), 
       arrowhead_width=unit(1, 'mm'), 
-      arrow_body_height=unit(6, 'mm')
-    ) +
-    gggenes::geom_gene_label(align='left'
-    ) + 
+      arrow_body_height=unit(3, 'mm')) +
+    gggenes::geom_gene_label(align='left', min.size=2) + 
     ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(-max_y-0.5, 0.5), 
-      expand=FALSE
-    ) + 
-    ggplot2::theme(aspect.ratio=0.0225+(0.02*max_y),
+      expand=FALSE) + 
+    ggplot2::theme(aspect.ratio=0.025+(0.02*max_y),
       axis.line.x=ggplot2::element_blank(), 
       axis.ticks.x=ggplot2::element_blank(), 
       axis.text.x=ggplot2::element_blank(), 
@@ -51,10 +48,12 @@ plot_genes <- function(chr, start, end, elements, session){
       axis.ticks.y=ggplot2::element_blank(), 
       axis.title.y=ggplot2::element_blank(),
       legend.title=ggplot2::element_blank(), 
-      panel.background=ggplot2::element_blank()
+      panel.background=ggplot2::element_blank(),
+      text=ggplot2::element_text(size=4.5),
+      legend.key.size=grid::unit(10, "points")
     )
   nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
-  yOffsetAspectRatio = 0.0225+(0.02*max_y)
+  yOffsetAspectRatio = 0.025+(0.02*max_y)
   if(yOffsetAspectRatio > nBiotypesAspectRatio){
     session$userData$plot_heights[["genes-gene_track"]] = yOffsetAspectRatio
   }

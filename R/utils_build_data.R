@@ -11,7 +11,7 @@
 build_data <- function(){
 	files = list()
 	filetypes = list("genome"=".genome", "hic"=".hic", "hic/tads"=".bed", 
-    "hic/loops"=".bedGraph", "hic/pca"=".bedGraph", "chip/signal"=".bigWig", "chip/peaks"=".multiinter",
+    "hic/loops"=".tsv", "hic/pca"=".bedGraph", "chip/signal"=".bigWig", "chip/peaks"=".multiinter",
     "atac/signal"=".bigWig", "atac/peaks"=".multiinter")
 
 	for(type in names(filetypes)){

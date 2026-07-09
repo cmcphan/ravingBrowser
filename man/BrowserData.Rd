@@ -38,9 +38,12 @@ initializing UI elements - set as the first listed chromosome in hic_info}
 \item{\code{default_chr_length}}{Double enumerating the length in base pairs of the
 default chromosome}
 
-\item{\code{tads, loops, pca}}{Data frames containing data for topologically associated
-domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+\item{\code{tads, pca}}{Data frames containing data for topologically associated
+domains (TADs) and A/B compartmentalization scores (i.e. PCA
 scores) matching to the loaded HiC file}
+
+\item{\code{loops}}{TSV file describing called loops matching the HiC data. This should be
+filtered to exclude trans interactions (i.e. bait and oef bins on different chromosomes)}
 
 \item{\code{chip_signal}}{Bigwig file information for ChIP datasets, used internally by
 \code{\link[=get_summaries]{get_summaries()}}. Names should be of the form {sample}_{mark}.bigWig. Input samples
@@ -62,9 +65,9 @@ with awk to add the remaining samples. A header line should be included.}
 processed and cleaned called ATAC-seq peaks. Filenames should be of the form
 {peakset}_{broad/narrow}\emph{overlap.multiinter, where peakset may be any identifier to
 group files of the same set, e.g. method used. Peakset should not include any underscores
-(}) to enable proper name parsing. All files should have the same set of samples included.
-Any that don't include all samples should be processed with awk to add the remaining samples.
-A header line should be included.}
+(}) to enable proper name parsing. All files should have the same set of samples included, and
+samples should match those in the atac_signal filenames. Any that don't include all samples
+should be processed with awk to add the remaining samples. A header line should be included.}
 
 \item{\code{genes}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}
@@ -84,8 +87,8 @@ structure}
 \item{\code{resolutions, normalizations}}{Vector of strings enumerating the available
 resolutions and normalization methods in the loaded HiC file}
 
-\item{\code{tads, loops, pca}}{Data frames containing data for topologically associated
-domains (TADs), loops and A/B compartmentalization scores (i.e. PCA
+\item{\code{tads, pca}}{Data frames containing data for topologically associated
+domains (TADs) and A/B compartmentalization scores (i.e. PCA
 scores) matching to the loaded HiC file}
 }
 \if{html}{\out{</div>}}

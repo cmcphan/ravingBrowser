@@ -124,7 +124,7 @@ mod_gene_select_server <- function(id, current_tab){
       ucsc_link = build_links(gene$ucsc, "ucsc", gene$gChr, gene$gStart, gene$gEnd)
       output$gene_info = renderUI(HTML(paste0(
         tags$h3(paste0(name," (",gene$symbol,") ")),
-        tags$p(paste0("Chr ",gene$gChr," : ",gene$gStart," - ",gene$gEnd,
+        tags$p(paste0(gene$gChr," : ",gene$gStart," - ",gene$gEnd,
           " (",strand," strand)")),
         tags$p(paste0("GC content: ",gene$gc_content,"%")),
         tags$p(gene$summary),
