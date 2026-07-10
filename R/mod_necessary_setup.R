@@ -75,7 +75,7 @@ mod_necessary_setup_server <- function(id){
       if(!identical(region, session$userData$region())){
         output$region_warning = renderUI(HTML(paste0(
           tags$em("Plotted region different from selection. Use the update plots button in 
-            toolbar to preserve region changes.", style="color:red")
+            toolbar to preserve region changes.", style="color:LightCoral")
         )))
       }
       else{

@@ -12,7 +12,7 @@ build_data <- function(){
 	files = list()
 	filetypes = list("genome"=".genome", "hic"=".hic", "hic/tads"=".bed", 
     "hic/loops"=".tsv", "hic/pca"=".bedGraph", "chip/signal"=".bigWig", "chip/peaks"=".multiinter",
-    "atac/signal"=".bigWig", "atac/peaks"=".multiinter")
+    "atac/signal"=".bigWig", "atac/peaks"=".multiinter", "methylation"=".h5ad")
 
 	for(type in names(filetypes)){
 		file = list.files(path=paste0("data-raw/",type),
@@ -51,6 +51,13 @@ build_data <- function(){
     atac_peaks_paths = files[["atac/peaks"]]
 	)
 
+  if(!is.null(files[["methylation"]])){
+    # Anndata objects don't seem to play nicely with the browser_data R6 object,
+    #  it can be loaded in successfully but assignment to an R6 field yields just a 
+    #  generic pointer rather than the object itself, likely due to the way anndata
+    #  handles data streaming. Usethis also can't properly save it as an Rda.
+    browser_data$plot_types$methylation = "Methylation"
+  }
 	usethis::use_data(browser_data, overwrite = TRUE)
 
 	load(file="data/browser_data.rda", .GlobalEnv)

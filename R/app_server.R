@@ -26,7 +26,7 @@ app_server <- function(input, output, session) {
   # This represents the current region shown in the plots
   session$userData$activeRegion = reactiveVal(NULL)
   # Counter that ticks up for each region change, used to trigger plot draws
-  #  like buttons
+  #  in a similar way to reactively tracking button value changes
   session$userData$regionChange = reactiveVal(0)
   session$userData$plot_heights = reactiveValues()
   

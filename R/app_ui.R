@@ -6,8 +6,19 @@
 #' @importFrom shinyjs useShinyjs
 #' @importFrom shinyFeedback useShinyFeedback
 #' @importFrom shinycssloaders withSpinner
+#' @import anndata
+#' @import reticulate
 #' @noRd
 app_ui <- function(request) {
+  if(!is.null(browser_data$plot_types$methylation)){
+    # Workaround to make sure the methylation h5ad is loaded into the
+    #  environment if present, given we can't use usethis
+    file = list.files(path=paste0("data-raw/methylation"),
+			pattern=paste0("\\.h5ad$"), full.names=TRUE)
+    reticulate::py_require(c("anndata>=0.7.5"))
+    methylation = anndata::read_h5ad(file)
+    assign("methylation", methylation, envir=.GlobalEnv)
+  }
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
