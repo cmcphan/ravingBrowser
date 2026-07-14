@@ -81,6 +81,8 @@ function disableBrush() {
   brush.style.visibility = "hidden";
   button.removeEventListener("click", disableBrush);
   button.addEventListener("click", brushElement);
+  button.classList.remove("button_toggle_on");
+  button.blur();
   brushButton.style.visibility = "hidden";
 }
 
@@ -96,6 +98,8 @@ function brushElement() {
   plot.style.cursor = "grab";
   button.removeEventListener("click", brushElement);
   button.addEventListener("click", disableBrush);
+  button.classList.add("button_toggle_on");
+  button.blur();
 
   function brushMouseDown(e) {
     e.preventDefault();

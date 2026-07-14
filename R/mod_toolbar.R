@@ -122,6 +122,9 @@ mod_toolbar_server <- function(id){
 
     observeEvent(input$zoom_in, {
       region = session$userData$activeRegion()
+      if(!shiny::isTruthy(region)){
+        return()
+      }
       zoomed_region = zoom(region$chr, region$start, region$end, "in")
       if(zoomed_region$width <= 1){
         zoomed_region = NULL
@@ -132,6 +135,9 @@ mod_toolbar_server <- function(id){
 
     observeEvent(input$zoom_out, {
       region = session$userData$activeRegion()
+      if(!shiny::isTruthy(region)){
+        return()
+      }
       zoomed_region = zoom(region$chr, region$start, region$end, "out")
       if(zoomed_region$width <= 1){
         zoomed_region = NULL

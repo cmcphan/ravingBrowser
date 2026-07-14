@@ -30,6 +30,15 @@
   height: 100%;
   width: 100%;
 }
+.alignment_bar_text {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: auto;
+  transform: translate(-50%);
+  color: black;
+  text-align: center;
+}
 .plot_brush {
   position: absolute;
   top: 34px; /* This should be equal to the height of the toolbar/buttons */
@@ -41,11 +50,16 @@
   background-color: rgb(101, 163, 245, 0.3);
 }
 .plot_brush_button {
-  position: absolute;
-  left: 50%;
+  position: sticky; 
+  top: 25px; 
+  margin-top: 25px; 
+  margin-left: 50%;
+  margin-right: 50%;
   transform: translate(-50%, -50%);
-  margin: 0;
-  top: 2.5%;
   visibility: hidden;
   z-index: 3;
+}
+.button_toggle_on {
+  background-color: lightgrey;
+  border: 1px solid lightcoral;
 }

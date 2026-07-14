@@ -17,7 +17,8 @@ mod_plot_ui <- function(id) {
     tags$div(id=ns("alignment_bar"), class="alignment_bar",
       tags$div(id=ns("alignment_bar_padding_left"), class="alignment_bar_padding"),
       tags$div(id=ns("alignment_bar_line"), class="alignment_bar_line"),
-      tags$div(id=ns("alignment_bar_padding_right"), class="alignment_bar_padding")
+      tags$div(id=ns("alignment_bar_padding_right"), class="alignment_bar_padding"),
+      tags$p("No plot", id=ns("alignment_bar_text"), class="alignment_bar_text")
     ),
     tags$div(id=ns("brush"), class="plot_brush",
       shiny::actionButton(
@@ -81,12 +82,18 @@ prev_configs, toolbar_config){
         shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
         return()
       }
-      if(!shiny::isTruthy(session$userData$region())){
+      else if(!shiny::isTruthy(session$userData$region())){
         shinycssloaders::hideSpinner("patchwork")
         shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
         return()
       }
       plotlist = isolate(reactiveValuesToList(current_plots))
+      plotCheck = unique(unlist(lapply(plotlist, is.null)))
+      if(is.null(plotCheck)){
+        shinycssloaders::hideSpinner("patchwork")
+        shinyjs::removeClass(selector="#plot_1-patchwork", class="recalculating")
+        return()
+      }
       plotlist_clean = list()
       for(p in names(plotlist)){
         if(!is.null(plotlist[[p]])){
@@ -121,6 +128,8 @@ prev_configs, toolbar_config){
         post_panel = sum(w_px)-pre_panel
         # These need to be passed through to the brush javascript onclick function
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
+        region = session$userData$activeRegion()
+        session$sendCustomMessage("plot_coords", c(region$start, region$end))
       }
       else if("ggplot" %in% attr(plot, "class")){
         plot_info = ggplot2::ggplotGrob(plot)
@@ -128,6 +137,8 @@ prev_configs, toolbar_config){
         pre_panel = sum(w_px[1:which(as.character(plot_info$width) == "1null")-1])
         post_panel = sum(w_px)-pre_panel
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
+        region = session$userData$activeRegion()
+        session$sendCustomMessage("plot_coords", c(region$start, region$end))
       }
       plot
     }, 
