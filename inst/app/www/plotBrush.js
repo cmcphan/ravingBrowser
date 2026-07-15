@@ -42,7 +42,7 @@ function convertCoords(l, r) {
   var left = (l - 15 - pre_panel) / maxLeft;
   // Essentially converting right coord to an equivalent left coord here
   var right = (width - r) / maxLeft;
-  // Due to what I assume is floating point math error, clicking and
+  // Clicking and
   //  not dragging out the brush results in a slight overlap in these calcs where 
   //  the left coord is slightly higher than the right one. Dragging even a single
   //  pixel resolves this problem. This is used as a check in the observeEvent in 

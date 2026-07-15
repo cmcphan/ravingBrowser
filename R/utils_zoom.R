@@ -25,8 +25,8 @@ zoom <- function(chr, start, end, zoom){
     stop("Zoom must be one of \"in\" or \"out\"")
   }
   
-  if(start < 0){
-    start = 0
+  if(start < 1){
+    start = 1
   }
   if(end > current_max){
     end = current_max

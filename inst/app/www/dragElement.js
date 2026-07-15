@@ -29,10 +29,10 @@ Shiny.addCustomMessageHandler("plot_coords", function(coords) {
 function convertCoordSingle(p) {
   // Width of just the plot panel. Function from plotBrush.js
   var width = getPlotWidth();
-  minPos = minLeft - 25;
+  minPos = minLeft - 26;
   maxPos = width - minRight + 2;
-  var pos = (p + 10) / (maxPos-minPos);
-  var coord = Math.round((pos*(coordMax-coordMin))+coordMin);
+  var pos = (p-minPos) / (maxPos-minPos);
+  var coord = Math.floor(coordMin + pos*(coordMax-coordMin));
   return coord;
 }
 
@@ -67,7 +67,6 @@ function dragLine() {
     e.preventDefault();
     // get the mouse cursor position at startup:
     xInitial = e.clientX;
-    text.innerHTML = convertCoordSingle(line.offsetLeft);
     document.onmouseup = closeDragLine;
     // call a function whenever the cursor moves:
     document.onmousemove = lineDrag;
@@ -80,10 +79,10 @@ function dragLine() {
     xInitial = e.clientX;
     // set the element's new position:
     xSet = line.offsetLeft - xNew;
-    if (xSet < minPos) {
+    if (xSet <= minPos) {
       line.style.left = minPos + "px";
       text.innerHTML = convertCoordSingle(minPos);
-    } else if (xSet > maxPos) {
+    } else if (xSet >= maxPos) {
       line.style.left = maxPos + "px";
       text.innerHTML = convertCoordSingle(maxPos);
     } else {
