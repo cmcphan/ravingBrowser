@@ -30,7 +30,7 @@ function convertCoordSingle(p) {
   // Width of just the plot panel. Function from plotBrush.js
   var width = getPlotWidth();
   minPos = minLeft - 26;
-  maxPos = width - minRight + 2;
+  maxPos = width - minRight + 3;
   var pos = (p-minPos) / (maxPos-minPos);
   var coord = Math.floor(coordMin + pos*(coordMax-coordMin));
   return coord;

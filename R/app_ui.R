@@ -15,7 +15,7 @@ app_ui <- function(request) {
     #  environment if present, given we can't use usethis
     file = list.files(path=paste0("data-raw/methylation"),
 			pattern=paste0("\\.h5ad$"), full.names=TRUE)
-    reticulate::py_require(c("anndata>=0.7.5"))
+    reticulate::py_require("anndata>=0.7.5")
     methylation = anndata::read_h5ad(file)
     assign("methylation", methylation, envir=.GlobalEnv)
   }

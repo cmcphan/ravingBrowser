@@ -94,12 +94,12 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
           current_plots[[paste0("chip-",m)]] = NULL
           session$userData$plot_heights[[paste0("chip-",m)]] = 0
         }
+        prev_configs[["chip"]]$selected = FALSE
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["chip"]]) | 
-        !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["chip"]])){
         return()
       }
       draw_plots(config)

@@ -73,7 +73,7 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       }
       
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["genes"]]) | !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["genes"]])){
         return()
       }
       draw_plots(config)

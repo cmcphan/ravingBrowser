@@ -18,7 +18,7 @@ mod_configure_methylation_ui <- function(id, session) {
         inputId = ns("statuses"),
         label = "Select any number of methylation statuses to include:",
         choices = c("methylated", "unmethylated", "variable", "high_sd"),
-        selected = c("methylated", "unmethylated", "variable", "high_sd")
+        selected = c("methylated", "unmethylated", "variable")
       ),
       tags$hr()
     )

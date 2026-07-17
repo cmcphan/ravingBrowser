@@ -109,7 +109,7 @@ function brushElement() {
     xInitial = e.clientX;
     plotWidth = getPlotWidth();
     xLeft = e.offsetX + 15; // Correcting for padding
-    var maxLeft = plotWidth - post_panel + 11;
+    var maxLeft = plotWidth - post_panel;
     if (xLeft < minLeft){
       xLeft = minLeft;
       brush.style.left = xLeft + "px";

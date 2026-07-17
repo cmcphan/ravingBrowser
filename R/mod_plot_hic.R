@@ -97,11 +97,12 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
         session$userData$plot_heights[["hic-loops"]] = 0
         current_plots[["hic-pca"]] = NULL
         session$userData$plot_heights[["hic-pca"]] = 0
+        prev_configs[["hic"]]$selected = FALSE
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["hic"]]) | !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["hic"]])){
         return()
       }
       draw_plots(config)

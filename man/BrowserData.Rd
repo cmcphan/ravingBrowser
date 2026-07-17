@@ -56,6 +56,8 @@ File names should be of the form \verb{\{mark\}_\{broad/narrow\}_overlap.multiin
 have the same set of samples included. Any that don't include all samples should be processed
 with awk to add the remaining samples. A header line should be included.}
 
+\item{\code{chip_max_reps}}{Integer value representing the number of reps present in the ChIP data.}
+
 \item{\code{chip_marks}}{A list of unique ChIP-seq marks included in the data.}
 
 \item{\code{atac_signal}}{Bigwig file information for ATAC datasets, used internally by
@@ -68,6 +70,8 @@ group files of the same set, e.g. method used. Peakset should not include any un
 (}) to enable proper name parsing. All files should have the same set of samples included, and
 samples should match those in the atac_signal filenames. Any that don't include all samples
 should be processed with awk to add the remaining samples. A header line should be included.}
+
+\item{\code{atac_max_reps}}{Integer value representing the number of reps present in the ATAC data.}
 
 \item{\code{genes}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}

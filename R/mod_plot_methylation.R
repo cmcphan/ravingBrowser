@@ -78,12 +78,12 @@ mod_plot_methylation_server <- function(id, basic_config, plot_config, current_p
       if(!("methylation" %in% isolate(basic_config$plot_type_select()))){
         current_plots[["methylation"]] = NULL
         session$userData$plot_heights[["methylation"]] = 0
+        prev_configs[["methylation"]]$selected = FALSE
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["methylation"]]) | 
-      !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["methylation"]])){
         return()
       }
       draw_plots(config)

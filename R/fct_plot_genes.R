@@ -37,7 +37,7 @@ plot_genes <- function(chr, start, end, elements, session){
     gggenes::geom_gene_arrow(arrowhead_height=unit(3, 'mm'), 
       arrowhead_width=unit(1, 'mm'), 
       arrow_body_height=unit(3, 'mm')) +
-    gggenes::geom_gene_label(align='left', min.size=2) + 
+    gggenes::geom_gene_label(data=subset(genes, !is.null(symbol)), align='left', min.size=2) + 
     ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(-max_y-0.5, 0.5), 
       expand=FALSE) + 
     ggplot2::theme(aspect.ratio=0.025+(0.02*max_y),

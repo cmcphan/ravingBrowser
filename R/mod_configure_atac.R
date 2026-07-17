@@ -28,7 +28,8 @@ mod_configure_atac_ui <- function(id, session) {
       checkboxGroupInput(
         inputId = ns("peaksets"),
         label = "Select any number of peaksets to plot:",
-        choices = names(browser_data$atac_peaks)
+        choices = names(browser_data$atac_peaks),
+        selected = "callpeakBed"
       ),
       sliderInput(
         inputId = ns("resolution"),

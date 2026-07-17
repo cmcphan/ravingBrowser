@@ -34,6 +34,7 @@
 #'  File names should be of the form `{mark}_{broad/narrow}_overlap.multiinter`. All files should
 #'  have the same set of samples included. Any that don't include all samples should be processed
 #'  with awk to add the remaining samples. A header line should be included.
+#' @field chip_max_reps Integer value representing the number of reps present in the ChIP data.
 #' @field chip_marks A list of unique ChIP-seq marks included in the data.
 #' @field atac_signal Bigwig file information for ATAC datasets, used internally by
 #'  [get_summaries()]. Names should be of the form {sample}.bigWig.
@@ -44,6 +45,7 @@
 #'  (_) to enable proper name parsing. All files should have the same set of samples included, and
 #'  samples should match those in the atac_signal filenames. Any that don't include all samples 
 #'  should be processed with awk to add the remaining samples. A header line should be included.
+#' @field atac_max_reps Integer value representing the number of reps present in the ATAC data.
 #' @field genes Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
 #' @field gene_feature_counts Named vector of unique gene biotypes from `genes` data
@@ -72,9 +74,11 @@ BrowserData <- R6::R6Class(
 		pca = NULL,
 		chip_signal = NULL,
     chip_peaks = NULL,
+    chip_max_reps = NULL,
     chip_marks = NULL,
     atac_signal = NULL,
     atac_peaks = NULL,
+    atac_max_reps = NULL,
 		genes = NULL,
     gene_feature_counts = NULL,
 		plot_types = NULL,
@@ -171,12 +175,12 @@ BrowserData <- R6::R6Class(
           df["mark"] = mark
           self$chip_peaks[[type]] = rbind(self$chip_peaks[[type]], df)
         }
+        self$chip_max_reps = length(cols)-5
         if(!"chip" %in% names(self$plot_types)){
           # This allows either signal or peaks to be added individually but requires that each
           #  is also handled individually e.g. in plot draw functions 
           self$plot_types[["chip"]] = "ChIP-seq"
         }
-        
       }
       if(!is.null(atac_signal_paths)){
 				self$atac_signal = read_coldata(bws=atac_signal_paths, build="hg38")
@@ -204,6 +208,7 @@ BrowserData <- R6::R6Class(
           }
           self$atac_peaks[[peakset]][[type]] = df
         }
+        self$atac_max_reps = length(cols)-5
         if(!"atac" %in% names(self$plot_types)){
           self$plot_types[["atac"]] = "ATAC-seq"
         }

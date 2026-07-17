@@ -94,12 +94,12 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
           current_plots[[paste0("atac-",p)]] = NULL
           session$userData$plot_heights[[paste0("atac-",p)]] = 0
         }
+        prev_configs[["atac"]]$selected = FALSE
         return()
       }
 
       config = build_config()
-      if(identical(reactiveValuesToList(config), prev_configs[["atac"]]) | 
-      !config$selected){
+      if(identical(reactiveValuesToList(config), prev_configs[["atac"]])){
         return()
       }
       draw_plots(config)

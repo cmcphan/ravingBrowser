@@ -28,7 +28,8 @@ mod_configure_chip_ui <- function(id, session) {
       checkboxGroupInput(
         inputId = ns("marks"),
         label = "Select any number of marks to plot:",
-        choices = browser_data$chip_marks
+        choices = browser_data$chip_marks,
+        selected = c("H3K4ME1", "H3K4ME3")
       ),
       sliderInput(
         inputId = ns("resolution"),

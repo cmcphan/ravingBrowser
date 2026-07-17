@@ -12,7 +12,7 @@
 #' @importFrom shinyFeedback showFeedbackDanger hideFeedback
 mod_configure_hic_ui <- function(id, session) {
   ns <- NS(id)
-  plot_types = list('tads'='TADs', 'loops'='Loops', 'pca'='A/B Compartment Scores')
+  plot_types = list("loops"="Loops", "tads"="TADs", "pca"="A/B Compartment Scores")
   plot_selections = list()
   for(type in names(plot_types)){
     if(!is.null(browser_data[[type]])){
@@ -20,32 +20,33 @@ mod_configure_hic_ui <- function(id, session) {
     }
   }
   tagList(
-    tags$div(id='hic_controls',
-      tags$h2('Hi-C'),
+    tags$div(id="hic_controls",
+      tags$h2("Hi-C"),
       checkboxGroupInput(
-        inputId = ns('plot_elements'),
-        label = 'Select any number of elements to plot:',
-        choices = plot_selections
+        inputId = ns("plot_elements"),
+        label = "Select any number of elements to plot:",
+        choices = plot_selections,
+        selected = plot_selections[1]
       ),
       selectInput(
-        inputId = ns('plot_resolution'),
-        label = 'Resolution (base pairs):',
+        inputId = ns("plot_resolution"),
+        label = "Resolution (base pairs):",
         choices = browser_data$resolutions,
         selected = browser_data$resolutions[1],
         multiple = FALSE
       ),
       selectInput(
-        inputId = ns('plot_normalization'),
-        label = 'Normalization method:',
+        inputId = ns("plot_normalization"),
+        label = "Normalization method:",
         choices = browser_data$normalizations,
-        selected = 'KR',
+        selected = "KR",
         multiple = FALSE
       ),
       selectInput(
-        inputId = ns('plot_format'),
-        label = 'Plot format:',
-        choices = list(Square='square', Triangular='triangular', Rectangular='rectangular'),
-        selected = 'triangular',
+        inputId = ns("plot_format"),
+        label = "Plot format:",
+        choices = list(Square="square", Triangular="triangular", Rectangular="rectangular"),
+        selected = "triangular",
         multiple = FALSE
       ),
       tags$hr()

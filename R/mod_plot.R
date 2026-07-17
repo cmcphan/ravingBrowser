@@ -59,6 +59,16 @@ prev_configs, toolbar_config){
       for(name in names(session$userData$plot_heights)){
         height = height + session$userData$plot_heights[[name]]
       }
+      # I don't know why this is necessary but adding multiple of the ChIP/ATAC
+      #  tracks makes the plot draw compress the x axes if this extra height isn't
+      #  applied beyond the first track. This is a band-aid fix but it works well
+      #  enough.
+      active = reactiveValuesToList(session$userData$plot_heights) != 0
+      mult = sum(unlist(lapply(names(session$userData$plot_heights)[active], 
+        startsWith, prefix=c("chip", "atac"))))
+      if(mult > 1){
+        height = height + (0.02*mult)
+      }
       return(height)
     })
 
@@ -124,8 +134,9 @@ prev_configs, toolbar_config){
         # Calculate pixel widths of plot elements
         w_px = grid::convertWidth(plot_info$width, "native", TRUE)
         # Total pixel widths before and after the actual plot panel
-        pre_panel = sum(w_px[1:which(as.character(plot_info$width) == "1null")-1])
-        post_panel = sum(w_px)-pre_panel
+        post_panel = sum(w_px[which(as.character(plot_info$width) == "1null"):
+          length(plot_info$width)])
+        pre_panel = sum(w_px)-post_panel
         # These need to be passed through to the brush javascript onclick function
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
         region = session$userData$activeRegion()
@@ -134,8 +145,9 @@ prev_configs, toolbar_config){
       else if("ggplot" %in% attr(plot, "class")){
         plot_info = ggplot2::ggplotGrob(plot)
         w_px = grid::convertWidth(plot_info$width, "native", TRUE)
-        pre_panel = sum(w_px[1:which(as.character(plot_info$width) == "1null")-1])
-        post_panel = sum(w_px)-pre_panel
+        post_panel = sum(w_px[which(as.character(plot_info$width) == "1null"):
+          length(plot_info$width)])
+        pre_panel = sum(w_px)-post_panel
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
         region = session$userData$activeRegion()
         session$sendCustomMessage("plot_coords", c(region$start, region$end))

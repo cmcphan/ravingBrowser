@@ -85,7 +85,7 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
       else ggplot2::scale_fill_manual(guide="none", values=COLOURS)} +
       #ggplot2::scale_fill_manual(guide="none", values=COLOURS) +
       ggplot2::labs(subtitle=m) +
-      ggplot2::theme(aspect.ratio=0.1,
+      ggplot2::theme(aspect.ratio=0.05,
         panel.background=ggplot2::element_blank(),
         plot.margin=ggplot2::margin(0, 0, 0, 0),
         axis.ticks.y=ggplot2::element_blank(),
@@ -95,7 +95,10 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
         text=ggplot2::element_text(size=4.5),
         legend.key.size=grid::unit(10, "points")
       )
-    session$userData$plot_heights[[paste0("chip-",m)]] = 0.1
+    # Not sure where the extra 0.01 height is coming from but it's required
+    #  otherwise the plots will be compressed on the x-axis when more than 2
+    #  are drawn
+    session$userData$plot_heights[[paste0("chip-",m)]] = 0.05
     return(plot)
   }, USE.NAMES=TRUE)
   rm(bw)
