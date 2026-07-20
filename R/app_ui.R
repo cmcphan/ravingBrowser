@@ -24,6 +24,18 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     shinyjs::useShinyjs(),
     shinyFeedback::useShinyFeedback(),
+    # The below comes from 
+    #  https://forum.posit.co/t/make-screen-width-available-for-an-output-component/197956/2
+    tags$script(HTML("
+      $(document).on('shiny:connected', function() {
+        Shiny.setInputValue('screen_width', window.innerWidth);
+        Shiny.setInputValue('screen_height', window.innerHeight);
+      });
+      $(window).resize(function() {
+        Shiny.setInputValue('screen_width', window.innerWidth);
+        Shiny.setInputValue('screen_height', window.innerHeight);
+      });
+    ")),
     # UI logic
     fluidPage(
       sidebarLayout(

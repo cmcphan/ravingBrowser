@@ -122,6 +122,7 @@ mod_gene_select_server <- function(id, current_tab){
       omim_link = build_links(gene$omim, "omim")
       hgnc_link = build_links(gene$hgnc_id, "hgnc")
       ucsc_link = build_links(gene$ucsc, "ucsc", gene$gChr, gene$gStart, gene$gEnd)
+      gtex_link = build_links(gene$symbol, "gtex")
       output$gene_info = renderUI(HTML(paste0(
         tags$h3(paste0(name," (",gene$symbol,") ")),
         tags$p(paste0(gene$gChr," : ",gene$gStart," - ",gene$gEnd,
@@ -135,7 +136,8 @@ mod_gene_select_server <- function(id, current_tab){
         tags$p("Uniprot entries: ", uniprot_link),
         tags$p("OMIM entries: ", omim_link),
         tags$p("HGNC entry: ", hgnc_link),
-        tags$p("UCSC browser: ", ucsc_link)
+        tags$p("UCSC browser: ", ucsc_link),
+        tags$p("GTEx entry: ", gtex_link)
       )))
       session$userData$region(region) 
     })

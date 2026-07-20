@@ -30,14 +30,15 @@ plot_genes <- function(chr, start, end, elements, session){
   }
   genes = cascade_genes(included_genes)
   max_y = max(genes$y_offset)
+  unit_ratio = session$userData$screen_width()/1920
   plot = ggplot2::ggplot(data = genes,
     ggplot2::aes(xmin=gStart, xmax=gEnd, y=-y_offset, label=symbol, 
       forward=strand, fill=gene_biotype)
     ) +
-    gggenes::geom_gene_arrow(arrowhead_height=unit(3, 'mm'), 
-      arrowhead_width=unit(1, 'mm'), 
-      arrow_body_height=unit(3, 'mm')) +
-    gggenes::geom_gene_label(data=subset(genes, !is.null(symbol)), align='left', min.size=2) + 
+    gggenes::geom_gene_arrow(arrowhead_height=unit(3*unit_ratio, 'mm'), 
+      arrowhead_width=unit(unit_ratio, 'mm'), 
+      arrow_body_height=unit(3*unit_ratio, 'mm')) +
+    gggenes::geom_gene_label(data=subset(genes, !is.na(symbol)), align='left') + 
     ggplot2::coord_cartesian(xlim=c(start, end), ylim=c(-max_y-0.5, 0.5), 
       expand=FALSE) + 
     ggplot2::theme(aspect.ratio=0.025+(0.02*max_y),
@@ -49,8 +50,8 @@ plot_genes <- function(chr, start, end, elements, session){
       axis.title.y=ggplot2::element_blank(),
       legend.title=ggplot2::element_blank(), 
       panel.background=ggplot2::element_blank(),
-      text=ggplot2::element_text(size=4.5),
-      legend.key.size=grid::unit(10, "points")
+      text=ggplot2::element_text(size=4.5*unit_ratio),
+      legend.key.size=grid::unit(10*unit_ratio, "points")
     )
   nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
   yOffsetAspectRatio = 0.025+(0.02*max_y)

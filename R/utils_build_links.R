@@ -5,7 +5,7 @@
 #' 
 #' @param ids List of IDs for the relevant service, from which links are built
 #' @param service Which service to build the links to. Can be "ucsc", "ensembl", 
-#'  "uniprot", "omim", "hgnc", "ncbi" or "genecards".
+#'  "uniprot", "omim", "hgnc", "ncbi", "genecards" or "gtex".
 #' @param chr,start,end Genomic coordinates for the given gene entry. Only required
 #'  for the "ucsc" option. Used to provide an alternative for cases where an ID
 #'  is missing.
@@ -51,8 +51,13 @@ build_links <- function(ids, service, chr=NULL, start=NULL, end=NULL){
       paste0("https://www.genecards.org/cgi-bin/carddisp.pl?gene=",id)
     }
   }
+  else if(service == "gtex"){
+    link = function(id){
+      paste0("https://www.gtexportal.org/home/gene/",id)
+    }
+  }
   else{stop("Service must be one of \"ucsc\", \"ensembl\", \"uniprot\", 
-    \"omim\", \"hgnc\", \"ncbi\" or \"genecards\"")}
+    \"omim\", \"hgnc\", \"ncbi\", \"genecards\" or \"gtex\".")}
 
   links = NULL
   if(!shiny::isTruthy(ids)){

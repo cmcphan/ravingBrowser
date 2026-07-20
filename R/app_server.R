@@ -14,7 +14,7 @@ app_server <- function(input, output, session) {
   toolbar_config = mod_toolbar_server("toolbar_1")
 	plot_types = basic_config$plot_type_select
   region = basic_config$region
-  
+
 	# Initialize session data
 	session$userData$configs = list()
 	current_plots = reactiveValues()
@@ -29,6 +29,8 @@ app_server <- function(input, output, session) {
   #  in a similar way to reactively tracking button value changes
   session$userData$regionChange = reactiveVal(0)
   session$userData$plot_heights = reactiveValues()
+  session$userData$screen_width = reactiveVal(1920)
+  session$userData$screen_height = reactiveVal(1080)
   
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`
@@ -82,4 +84,12 @@ app_server <- function(input, output, session) {
       session = session
     )
 	})
+
+  observeEvent(input$screen_width, {
+    session$userData$screen_width(input$screen_width)
+  }, ignoreNULL = TRUE)
+
+  observeEvent(input$screen_height, {
+    session$userData$screen_height(input$screen_height)
+  }, ignoreNULL = TRUE)
 }
