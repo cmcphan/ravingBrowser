@@ -26,6 +26,8 @@
 plot_hic <- function(chr, start, end, resolution, normalization='KR',
                 format='triangular', session){
   hic_path = browser_data$hic
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   if(format == 'square'){
     strawr_query = paste(chr,start,end, sep=':')
     interactions = strawr::straw(normalization, hic_path, strawr_query,
@@ -44,8 +46,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=4.5),
-        legend.key.size=grid::unit(10, "points")
+        text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 1
   }
@@ -67,8 +69,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=4.5),
-        legend.key.size=grid::unit(10, "points")
+        text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
@@ -90,8 +92,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         axis.title=ggplot2::element_blank(),
         axis.ticks.y=ggplot2::element_blank(),
         axis.text.y=ggplot2::element_blank(),
-        text=ggplot2::element_text(size=4.5),
-        legend.key.size=grid::unit(10, "points")
+        text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
     session$userData$plot_heights[["hic-hic"]] = 0.5
   }
@@ -111,6 +113,8 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
 #'
 #' @import ggplot2
 draw_tads <- function(plot, chr, start, end){
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   format = attr(plot, 'format')
   included_tads = subset(browser_data$tads, tChr==chr &
     ((tEnd >= start & tStart <= start) |
@@ -163,6 +167,8 @@ draw_tads <- function(plot, chr, start, end){
 #' @import ggraph
 #' @importFrom tidygraph tbl_graph
 plot_loops <- function(chr, start, end, session){
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   # Loops should have been filtered to exclude any trans chromosomal interactions, so we
   #  only need to check the chr of one bin
   included_cis_loops = subset(browser_data$loops, bait_chr==chr &
@@ -190,8 +196,8 @@ plot_loops <- function(chr, start, end, session){
     ggraph::theme_graph(plot_margin=ggplot2::margin(0, 0, 0, 0),
       base_family='sans') +
     ggplot2::theme(aspect.ratio=0.1, 
-      text=ggplot2::element_text(size=4.5),
-      legend.key.size=grid::unit(10, "points")) +
+      text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+      legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
   session$userData$plot_heights[["hic-loops"]] = 0.1
   rm(included_cis_loops)
@@ -215,6 +221,8 @@ plot_loops <- function(chr, start, end, session){
 #'
 #' @import ggplot2
 plot_pca <- function(chr, start, end, session){
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   included_pca = subset(browser_data$pca, pChr==chr &
     ((pEnd >= start & pStart <= start) | (pStart <= end & pEnd >= end) |
     (pStart >= start & pEnd <= end)))

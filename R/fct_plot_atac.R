@@ -22,6 +22,8 @@
 #' @importFrom ggblend blend
 #' @importFrom quickcode mix.color
 plot_atac <- function(c, s, e, resolution, peaksets, session) {
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   atac_query = paste0(c,':',s,'-',e)
   bedfile = gen_windows(chr=c, start=s, end=e, window_size=resolution)
   bw = browser_data$atac_signal
@@ -98,8 +100,8 @@ plot_atac <- function(c, s, e, resolution, peaksets, session) {
         axis.text.y=ggplot2::element_blank(),
         axis.title=ggplot2::element_blank(),
         plot.subtitle=ggplot2::element_text(vjust=-3),
-        text=ggplot2::element_text(size=4.5),
-        legend.key.size=grid::unit(10, "points")
+        text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
     session$userData$plot_heights[[paste0("atac-",p)]] = 0.05
     return(plot)

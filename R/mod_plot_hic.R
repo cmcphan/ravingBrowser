@@ -50,6 +50,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       config$normalization = plot_config$normalization()
       config$format = plot_config$format()
       config$elements = plot_config$elements()
+      config$screen_dimensions = c(session$userData$screen_width(), session$userData$screen_height())
       if(!("hic" %in% isolate(basic_config$plot_type_select()))){
         config$selected = FALSE
       }

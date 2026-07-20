@@ -47,6 +47,7 @@ mod_plot_methylation_server <- function(id, basic_config, plot_config, current_p
       config$start = as.numeric(region$start)
       config$end = as.numeric(region$end)
       config$statuses = plot_config$elements()
+      config$screen_dimensions = c(session$userData$screen_width(), session$userData$screen_height())
       if(!("methylation" %in% isolate(basic_config$plot_type_select()))){
         config$selected = FALSE
       }

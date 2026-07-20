@@ -49,6 +49,7 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
       width = config$end - config$start
       config$resolution = as.integer(width / plot_config$resolution())
       config$peaksets = plot_config$elements()
+      config$screen_dimensions = c(session$userData$screen_width(), session$userData$screen_height())
       if(!("atac" %in% isolate(basic_config$plot_type_select()))){
         config$selected = FALSE
       }

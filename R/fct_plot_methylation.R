@@ -14,6 +14,8 @@
 #' 
 #' @noRd
 plot_methylation <- function(c, s, e, statuses, session){
+  w_ratio = session$userData$screen_width()/1920
+  h_ratio = session$userData$screen_height()/965
   data = subset(methylation$obs, status %in% statuses & chr == c & start >= s & start <= e)
   if(nrow(data) == 0){
     session$userData$plot_heights[["methylation"]] = 0
@@ -31,8 +33,8 @@ plot_methylation <- function(c, s, e, statuses, session){
       axis.ticks.y=ggplot2::element_blank(),
       axis.text.y=ggplot2::element_blank(),
       axis.title=ggplot2::element_blank(),
-      text=ggplot2::element_text(size=4.5),
-      legend.key.size=grid::unit(10, "points")
+      text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
+      legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
     )
   session$userData$plot_heights[["methylation"]] = 0.05
   rm(data)
