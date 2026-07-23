@@ -35,63 +35,27 @@ plot_atac <- function(c, s, e, resolution, peaksets, session) {
   # Remove temporary bedfile now that we have no more use for it. This is ripped from the get_summaries
   #  function, where it was originally and modified to run asynchronously
   system(command = paste0("rm ", bedfile), intern = FALSE, wait=FALSE)
-  COLOURS = list()
-  scaleVals = NULL
-  for(p in peaksets){
-    peaks = browser_data$atac_peaks[[p]]
-    scaleVals = c(scaleVals, sort(unique(peaks$broad[["samples"]])))
-    if(length(peaks) == 2){
-      scaleVals = c(scaleVals, sort(unique(peaks$narrow[["samples"]])))
-    }
-  }
-  singles = unique(unlist(lapply(scaleVals, function(x){strsplit(x, split=",")[[1]]})))
-  scale = scales::hue_pal()(length(singles))
-  for(i in 1:length(singles)){
-    if(!singles[i] %in% names(COLOURS)){
-      COLOURS[[singles[i]]] = scale[i]
-    }
-  }
-  for(i in 1:length(scaleVals)){
-    split = strsplit(scaleVals[i], split=",")[[1]]
-    if(length(split) > 1){
-      blend = NULL
-      for(x in split){
-        blend = c(blend, COLOURS[[x]])
-      }
-      COLOURS[[scaleVals[i]]] = quickcode::mix.color(blend)
-    }
-  }
   plots = sapply(peaksets, function(p){
-    includeNarrow = FALSE
-    peaks = browser_data$atac_peaks[[p]]
-    if(length(peaks) == 2){
-      includeNarrow = TRUE
-    }
-    peaksBroad = subset(peaks$broad, chr==c & ((end >= s & start <= s) | 
+    peaks = subset(browser_data$atac_peaks[[p]], chr==c & ((end >= s & start <= s) | 
       (start <= e & end >= e) | (start >= s & end <= e)))
-    if(includeNarrow){
-      peaksNarrow = subset(peaks$narrow, chr==c & ((end >= s & start <= s) | 
-        (start <= e & end >= e) | (start >= s & end <= e)))
-    }
     # Calculate peak block positions
     maxVal = max(unlist(lapply(atac_signal, function(df){ max(df[,"metric"]) }))) # Get max signal value
-    broadBlockMin = maxVal*1.05
-    broadBlockMax = maxVal*1.15
-    if(includeNarrow){
-      narrowBlockMin = maxVal*1.20
-      narrowBlockMax = maxVal*1.30
+    peakBlockMax = maxVal*1.3
+    base_colour = browser_data$COLOURS[[paste0("atac-",p)]]
+    colours = NULL
+    max_reps = browser_data$atac_max_reps[[p]]
+    for(i in 1:max_reps){
+      colours[as.character(i)] = alpha(base_colour, i*(1/max_reps))
     }
     plot = ggplot2::ggplot() +
-      lapply(names(atac_signal), function(n){ggplot2::geom_area(ggplot2::aes(x=start, y=metric, 
-        fill=n), alpha=0.5, data=atac_signal[[n]])}) |> ggblend::blend("lighten") +
-      ggplot2::geom_rect(data=peaksBroad, ggplot2::aes(xmin=start, xmax=end, ymin=maxVal, 
-        ymax=broadBlockMax, fill=samples), alpha=1) +
-      {if(includeNarrow) ggplot2::geom_rect(data=peaksNarrow, ggplot2::aes(xmin=start, xmax=end, ymin=narrowBlockMin, 
-        ymax=narrowBlockMax, fill=samples), alpha=1)} +
+      lapply(names(atac_signal), function(n){ggplot2::geom_area(ggplot2::aes(x=start, y=metric), 
+        fill=base_colour, alpha=1/max_reps, data=atac_signal[[n]])}) |> ggblend::blend("add") +
+      ggplot2::geom_rect(data=peaks, ggplot2::aes(xmin=start, xmax=end, ymin=maxVal, 
+        ymax=peakBlockMax, fill=nReps), key_glyph=cowplot::rectangle_key_glyph(colour=fill, size=0, 
+        padding=grid::unit(c(1*h_ratio, 0, 1*h_ratio, 0), "pt"))) +
       ggplot2::coord_cartesian(xlim=c(s, e), expand=FALSE) +
-      {if(p==peaksets[1]) ggplot2::scale_fill_manual(name="Sample",values=COLOURS)
-      else ggplot2::scale_fill_manual(guide="none", values=COLOURS)} +
-      #ggplot2::scale_fill_manual(guide="none", values=COLOURS) +
+      ggplot2::scale_fill_manual(limits=as.factor(seq(from=1, to=max_reps, by=1)), 
+        values=colours, name="Support") +
       ggplot2::labs(subtitle=p) +
       ggplot2::theme(aspect.ratio=0.05,
         panel.background=ggplot2::element_blank(),
@@ -101,7 +65,11 @@ plot_atac <- function(c, s, e, resolution, peaksets, session) {
         axis.title=ggplot2::element_blank(),
         plot.subtitle=ggplot2::element_text(vjust=-3),
         text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
-        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
+        legend.key.size=grid::unit(8*min(w_ratio, h_ratio), "points"),
+        legend.key.spacing=grid::unit(0, "points"),
+        legend.direction="horizontal",
+        legend.title.position="top",
+        legend.text.position="bottom"
       )
     session$userData$plot_heights[[paste0("atac-",p)]] = 0.05
     return(plot)

@@ -52,7 +52,7 @@ should replace {mark} with INPUT.}
 \item{\code{chip_peaks}}{A list of strings describing filepaths to BED-like files containing
 called ChIP-seq peaks. These are outputs from bedtools multiinter which describe overlapping
 intervals between processed and cleaned called peaks across all samples for the same mark.
-File names should be of the form \verb{\{mark\}_\{broad/narrow\}_overlap.multiinter}. All files should
+File names should be of the form \verb{\{mark\}_overlap.multiinter}. All files should
 have the same set of samples included. Any that don't include all samples should be processed
 with awk to add the remaining samples. A header line should be included.}
 
@@ -65,13 +65,15 @@ with awk to add the remaining samples. A header line should be included.}
 
 \item{\code{atac_peaks}}{A list of strings describing filepaths to BED files containing
 processed and cleaned called ATAC-seq peaks. Filenames should be of the form
-{peakset}_{broad/narrow}\emph{overlap.multiinter, where peakset may be any identifier to
+{peakset}\emph{overlap.multiinter, where peakset may be any identifier to
 group files of the same set, e.g. method used. Peakset should not include any underscores
 (}) to enable proper name parsing. All files should have the same set of samples included, and
 samples should match those in the atac_signal filenames. Any that don't include all samples
 should be processed with awk to add the remaining samples. A header line should be included.}
 
 \item{\code{atac_max_reps}}{Integer value representing the number of reps present in the ATAC data.}
+
+\item{\code{COLOURS}}{A named list matching ChIP/ATAC tracks to colours used for their plots.}
 
 \item{\code{genes}}{Data frame containing a variety of information about gene features
 from various sources. Produced by \code{\link[genekitr:genInfo]{genekitr::genInfo()}}}

@@ -35,26 +35,6 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
   # Remove temporary bedfile now that we have no more use for it. This is ripped from the get_summaries
   #  function, where it was originally and modified to run asynchronously
   system(command = paste0("rm ", bedfile), intern = FALSE, wait=FALSE)
-  COLOURS = list()
-  scaleVals = sort(unique(browser_data$chip_peaks$broad[["samples"]]))
-  scaleVals = unique(c(scaleVals, unique(browser_data$chip_peaks$narrow[["samples"]])))
-  singles = unique(unlist(lapply(scaleVals, function(x){strsplit(x, split=",")[[1]]})))
-  scale = scales::hue_pal()(length(singles))
-  for(i in 1:length(singles)){
-    if(!singles[i] %in% names(COLOURS)){
-      COLOURS[[singles[i]]] = scale[i]
-    }
-  }
-  for(i in 1:length(scaleVals)){
-    split = strsplit(scaleVals[i], split=",")[[1]]
-    if(length(split) > 1){
-      blend = NULL
-      for(x in split){
-        blend = c(blend, COLOURS[[x]])
-      }
-      COLOURS[[scaleVals[i]]] = quickcode::mix.color(blend)
-    }
-  }
   plots = sapply(marks, function(m){
     delta_signal = list()
     for(sample in unique(subset(bw, mark==m)[["sample"]])){
@@ -65,27 +45,26 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
       #delta_signal[[sample]][,"metric"] = delta_signal[[sample]][["metric"]] /
       #  max(delta_signal[[sample]][["metric"]])
     }
-    peaksBroad = subset(browser_data$chip_peaks$broad, mark==m & chr==c & ((end >= s & start <= s) | 
-      (start <= e & end >= e) | (start >= s & end <= e)))
-    peaksNarrow = subset(browser_data$chip_peaks$narrow, mark==m & chr==c & ((end >= s & start <= s) | 
+    peaks = subset(browser_data$chip_peaks[[m]], chr==c & ((end >= s & start <= s) | 
       (start <= e & end >= e) | (start >= s & end <= e)))
     # Calculate peak block positions
     maxVal = max(unlist(lapply(delta_signal, function(df){ max(df[,"metric"]) }))) # Get max signal value
-    broadBlockMin = maxVal*1.05
-    broadBlockMax = maxVal*1.15
-    narrowBlockMin = maxVal*1.20
-    narrowBlockMax = maxVal*1.30
+    peakBlockMax = maxVal*1.30
+    base_colour = browser_data$COLOURS[[paste0("chip-",m)]]
+    colours = NULL
+    max_reps = browser_data$chip_max_reps[[m]]
+    for(i in 1:max_reps){
+      colours[as.character(i)] = alpha(base_colour, i*(1/max_reps))
+    }
     plot = ggplot2::ggplot() +
-      lapply(names(delta_signal), function(n){ggplot2::geom_area(ggplot2::aes(x=start, y=metric, 
-        fill=n), alpha=0.5, data=delta_signal[[n]])}) |> ggblend::blend("lighten") +
-      ggplot2::geom_rect(data=peaksBroad, ggplot2::aes(xmin=start, xmax=end, ymin=maxVal, 
-        ymax=broadBlockMax, fill=samples), alpha=1) +
-      ggplot2::geom_rect(data=peaksNarrow, ggplot2::aes(xmin=start, xmax=end, ymin=narrowBlockMin, 
-        ymax=narrowBlockMax, fill=samples), alpha=1) +
+      lapply(names(delta_signal), function(n){ggplot2::geom_area(ggplot2::aes(x=start, y=metric), 
+        fill=base_colour, alpha=1/max_reps, data=delta_signal[[n]])}) |> ggblend::blend("add") +
+      ggplot2::geom_rect(data=peaks, ggplot2::aes(xmin=start, xmax=end, ymin=maxVal, 
+        ymax=peakBlockMax, fill=nReps), key_glyph=cowplot::rectangle_key_glyph(colour=fill, size=0, 
+        padding=grid::unit(c(1*h_ratio, 0, 1*h_ratio, 0), "pt"))) +
       ggplot2::coord_cartesian(xlim=c(s, e), expand=FALSE) +
-      {if(m==marks[1]) ggplot2::scale_fill_manual(name="Sample",values=COLOURS)
-      else ggplot2::scale_fill_manual(guide="none", values=COLOURS)} +
-      #ggplot2::scale_fill_manual(guide="none", values=COLOURS) +
+      ggplot2::scale_fill_manual(limits=as.factor(seq(from=1, to=max_reps, by=1)), 
+        values=colours, name="Support") +
       ggplot2::labs(subtitle=m) +
       ggplot2::theme(aspect.ratio=0.05,
         panel.background=ggplot2::element_blank(),
@@ -95,11 +74,12 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
         axis.title=ggplot2::element_blank(),
         plot.subtitle=ggplot2::element_text(vjust=-3),
         text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
-        legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
+        legend.key.size=grid::unit(8*min(w_ratio, h_ratio), "points"),
+        legend.key.spacing=grid::unit(0, "points"),
+        legend.direction="horizontal",
+        legend.title.position="top",
+        legend.text.position="bottom"
       )
-    # Not sure where the extra 0.01 height is coming from but it's required
-    #  otherwise the plots will be compressed on the x-axis when more than 2
-    #  are drawn
     session$userData$plot_heights[[paste0("chip-",m)]] = 0.05
     return(plot)
   }, USE.NAMES=TRUE)

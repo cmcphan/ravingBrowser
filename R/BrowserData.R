@@ -31,7 +31,7 @@
 #' @field chip_peaks A list of strings describing filepaths to BED-like files containing
 #'  called ChIP-seq peaks. These are outputs from bedtools multiinter which describe overlapping
 #'  intervals between processed and cleaned called peaks across all samples for the same mark. 
-#'  File names should be of the form `{mark}_{broad/narrow}_overlap.multiinter`. All files should
+#'  File names should be of the form `{mark}_overlap.multiinter`. All files should
 #'  have the same set of samples included. Any that don't include all samples should be processed
 #'  with awk to add the remaining samples. A header line should be included.
 #' @field chip_max_reps Integer value representing the number of reps present in the ChIP data.
@@ -40,12 +40,13 @@
 #'  [get_summaries()]. Names should be of the form {sample}.bigWig.
 #' @field atac_peaks A list of strings describing filepaths to BED files containing
 #'  processed and cleaned called ATAC-seq peaks. Filenames should be of the form 
-#'  {peakset}_{broad/narrow}_overlap.multiinter, where peakset may be any identifier to 
+#'  {peakset}_overlap.multiinter, where peakset may be any identifier to 
 #'  group files of the same set, e.g. method used. Peakset should not include any underscores
 #'  (_) to enable proper name parsing. All files should have the same set of samples included, and
 #'  samples should match those in the atac_signal filenames. Any that don't include all samples 
 #'  should be processed with awk to add the remaining samples. A header line should be included.
 #' @field atac_max_reps Integer value representing the number of reps present in the ATAC data.
+#' @field COLOURS A named list matching ChIP/ATAC tracks to colours used for their plots.
 #' @field genes Data frame containing a variety of information about gene features
 #'  from various sources. Produced by [genekitr::genInfo()]
 #' @field gene_feature_counts Named vector of unique gene biotypes from `genes` data
@@ -79,6 +80,7 @@ BrowserData <- R6::R6Class(
     atac_signal = NULL,
     atac_peaks = NULL,
     atac_max_reps = NULL,
+    COLOURS = NULL,
 		genes = NULL,
     gene_feature_counts = NULL,
 		plot_types = NULL,
@@ -100,7 +102,7 @@ BrowserData <- R6::R6Class(
       loops_path=NULL, pca_path=NULL, chip_signal_paths=NULL, chip_peaks_paths=NULL, 
       atac_signal_paths=NULL, atac_peaks_paths=NULL){
 			if(!is.null(genome_path)){
-        genome = readr::read_tsv(genome_path, col_names=FALSE)
+        genome = readr::read_tsv(genome_path, col_names=FALSE, show_col_types = FALSE)
         colnames(genome) = c("chr", "size")
         genome = tibble::column_to_rownames(genome, "chr")
         self$genome = genome
@@ -121,12 +123,12 @@ BrowserData <- R6::R6Class(
         self$plot_types[["hic"]] = "Hi-C"
 			}
 			if(!is.null(tads_path)){
-				tads = readr::read_tsv(tads_path, col_select=c(1, 2, 3), col_names=FALSE)
+				tads = readr::read_tsv(tads_path, col_select=c(1, 2, 3), col_names=FALSE, show_col_types = FALSE)
 				colnames(tads) = c("tChr", "tStart", "tEnd")
 				self$tads = tads
 			}
 			if(!is.null(loops_path)){
-				loops = readr::read_tsv(loops_path, col_names=FALSE)
+				loops = readr::read_tsv(loops_path, col_names=FALSE, show_col_types = FALSE)
 				colnames(loops) = c("bait_chr", "bait_start", "bait_end", "bait_id", "oef_chr", "oef_start",
           "oef_end", "oef_id", "reads", "score", "region_id", "rep", "interaction", "support")
 				# Simplify loop coordinates by taking the middle of each bin as our node
@@ -137,7 +139,7 @@ BrowserData <- R6::R6Class(
 				self$loops = loops
 			}
 			if(!is.null(pca_path)){
-				pca = readr::read_tsv(pca_path, col_names=FALSE)
+				pca = readr::read_tsv(pca_path, col_names=FALSE, show_col_types = FALSE)
 				colnames(pca) = c("pChr", "pStart", "pEnd", "pScore")
 				self$pca = pca
 			}
@@ -153,29 +155,20 @@ BrowserData <- R6::R6Class(
         self$chip_marks = marks
 			}
       if(!is.null(chip_peaks_paths)){
-        self$chip_peaks = list(broad=NULL, narrow=NULL)
+        self$chip_peaks = list()
         cols = NULL
         for(f in chip_peaks_paths){
           base = strsplit(f, "/")[[1]]
           split = strsplit(base[length(base)], "_")[[1]]
           mark = split[1]
-          type = split[2]
           # Need to force the read function to treat the samples column as characters otherwise it
           #  will default to double
-          df = readr::read_tsv(f, col_names=TRUE, col_types=readr::cols(samples=readr::col_character()))
-          if(is.null(cols)){
-            cols = names(df)
-          }
-          else{
-            if(!identical(names(df), cols)){
-              stop(paste0("ChIP peak file ",f," column names do not match others. Ensure that 
-                all peak files have the same structure."))
-            }
-          }
-          df["mark"] = mark
-          self$chip_peaks[[type]] = rbind(self$chip_peaks[[type]], df)
+          df = readr::read_tsv(f, col_names=TRUE, col_types=readr::cols(samples=readr::col_character()), 
+            show_col_types = FALSE)
+          self$chip_max_reps[[mark]] = max(df$nReps)
+          df$nReps = as.factor(df$nReps)
+          self$chip_peaks[[mark]] = df
         }
-        self$chip_max_reps = length(cols)-5
         if(!"chip" %in% names(self$plot_types)){
           # This allows either signal or peaks to be added individually but requires that each
           #  is also handled individually e.g. in plot draw functions 
@@ -190,28 +183,34 @@ BrowserData <- R6::R6Class(
 			}
       if(!is.null(atac_peaks_paths)){
         self$atac_peaks = list()
-        cols = NULL
         for(f in atac_peaks_paths){
           base = strsplit(f, "/")[[1]]
           split = strsplit(base[length(base)], "_")[[1]]
           peakset = split[1]
-          type = split[2]
-          df = readr::read_tsv(f, col_names=TRUE)
-          if(is.null(cols)){
-            cols = names(df)
-          }
-          else{
-            if(!identical(names(df), cols)){
-              stop(paste0("ATAC peak file ",f," column names do not match others. Ensure that all 
-                peak files have the same structure."))
-            }
-          }
-          self$atac_peaks[[peakset]][[type]] = df
+          df = readr::read_tsv(f, col_names=TRUE, show_col_types = FALSE)
+          self$atac_max_reps[[peakset]] = max(df$nReps)
+          df$nReps = as.factor(df$nReps)
+          self$atac_peaks[[peakset]] = df
         }
-        self$atac_max_reps = length(cols)-5
         if(!"atac" %in% names(self$plot_types)){
           self$plot_types[["atac"]] = "ATAC-seq"
         }
+      }
+      colours = scales::hue_pal()(8)
+      c = 0
+      for(m in self$chip_marks){
+        c = c+1
+        if(c > 8){
+          c = 1
+        }
+        self$COLOURS[[paste0("chip-",m)]] = colours[c]
+      }
+      for(p in names(self$atac_peaks)){
+        c = c+1
+        if(c > 8){
+          c = 1
+        }
+        self$COLOURS[[paste0("atac-",p)]] = colours[c]
       }
 			genes = genekitr::genInfo(org="human", hgVersion="v38", unique=TRUE)
 			# Rename columns so they don"t clash with other variables and are consistent

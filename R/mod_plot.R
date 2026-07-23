@@ -67,7 +67,7 @@ prev_configs, toolbar_config){
       mult = sum(unlist(lapply(names(session$userData$plot_heights)[active], 
         startsWith, prefix=c("chip", "atac"))))
       if(mult > 1){
-        height = height + (0.02*mult)
+        height = height + (0.025*mult)
       }
       return(height)
     })
