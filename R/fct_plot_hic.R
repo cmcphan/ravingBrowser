@@ -49,7 +49,7 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
         legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
-    session$userData$plot_heights[["hic-hic"]] = 1
+    session$userData$plot_height_ratios[["hic-hic"]] = 1
   }
   else if(format == 'triangular'){
     range = end-start
@@ -72,7 +72,7 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
         legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
-    session$userData$plot_heights[["hic-hic"]] = 0.5
+    session$userData$plot_height_ratios[["hic-hic"]] = 0.5
   }
   else if(format == 'rectangular'){
     range = end-start
@@ -95,7 +95,7 @@ plot_hic <- function(chr, start, end, resolution, normalization='KR',
         text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
         legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
       )
-    session$userData$plot_heights[["hic-hic"]] = 0.5
+    session$userData$plot_height_ratios[["hic-hic"]] = 0.5
   }
   attr(plot, 'format') = format
   return(plot)
@@ -199,7 +199,7 @@ plot_loops <- function(chr, start, end, session){
       text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
       legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")) +
     ggplot2::coord_cartesian(xlim=c(start, end), expand=FALSE)
-  session$userData$plot_heights[["hic-loops"]] = 0.1
+  session$userData$plot_height_ratios[["hic-loops"]] = 0.1
   rm(included_cis_loops)
   rm(nodes)
   rm(edges)
@@ -250,7 +250,7 @@ plot_pca <- function(chr, start, end, session){
       axis.ticks=ggplot2::element_blank(),
       axis.text=ggplot2::element_blank()
     )
-  session$userData$plot_heights[["hic-pca"]] = 0.1
+  session$userData$plot_height_ratios[["hic-pca"]] = 0.1
   rm(included_pca)
   rm(included_pca_A)
   rm(included_pca_B)

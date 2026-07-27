@@ -71,7 +71,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       }
       else { 
         current_plots[["hic-loops"]] = NULL
-        session$userData$plot_heights[["hic-loops"]] = 0
+        session$userData$plot_height_ratios[["hic-loops"]] = 0
       }
       if("pca" %in% config$elements){
         current_plots[["hic-pca"]] = plot_pca(config$chr, config$start, config$end,
@@ -79,7 +79,7 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       }
       else { 
         current_plots[["hic-pca"]] = NULL
-        session$userData$plot_heights[["hic-pca"]] = 0
+        session$userData$plot_height_ratios[["hic-pca"]] = 0
       }
     }
 
@@ -93,11 +93,11 @@ mod_plot_hic_server <- function(id, basic_config, plot_config, current_plots,
       }
       if(!('hic' %in% isolate(basic_config$plot_type_select()))){
         current_plots[["hic-hic"]] = NULL
-        session$userData$plot_heights[["hic-hic"]] = 0
+        session$userData$plot_height_ratios[["hic-hic"]] = 0
         current_plots[["hic-loops"]] = NULL
-        session$userData$plot_heights[["hic-loops"]] = 0
+        session$userData$plot_height_ratios[["hic-loops"]] = 0
         current_plots[["hic-pca"]] = NULL
-        session$userData$plot_heights[["hic-pca"]] = 0
+        session$userData$plot_height_ratios[["hic-pca"]] = 0
         prev_configs[["hic"]]$selected = FALSE
         return()
       }

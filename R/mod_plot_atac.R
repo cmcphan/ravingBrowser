@@ -62,7 +62,7 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
         prev_configs[["atac"]] = config
         for(p in names(browser_data$atac_peaks)){
           current_plots[[paste0("atac-",p)]] = NULL
-          session$userData$plot_heights[[paste0("atac-",p)]] = 0
+          session$userData$plot_height_ratios[[paste0("atac-",p)]] = 0
         }
         return()
       }
@@ -71,7 +71,7 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
       for(p in names(browser_data$atac_peaks)){
         if(!(p %in% config$peaksets)){
           current_plots[[paste0("atac-",p)]] = NULL
-          session$userData$plot_heights[[paste0("atac-",p)]] = 0
+          session$userData$plot_height_ratios[[paste0("atac-",p)]] = 0
         }
       }
       
@@ -93,7 +93,7 @@ mod_plot_atac_server <- function(id, basic_config, plot_config, current_plots,
       if(!("atac" %in% isolate(basic_config$plot_type_select()))){
         for(p in names(browser_data$atac_peaks)){
           current_plots[[paste0("atac-",p)]] = NULL
-          session$userData$plot_heights[[paste0("atac-",p)]] = 0
+          session$userData$plot_height_ratios[[paste0("atac-",p)]] = 0
         }
         prev_configs[["atac"]]$selected = FALSE
         return()

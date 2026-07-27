@@ -28,9 +28,11 @@ app_server <- function(input, output, session) {
   # Counter that ticks up for each region change, used to trigger plot draws
   #  in a similar way to reactively tracking button value changes
   session$userData$regionChange = reactiveVal(0)
-  session$userData$plot_heights = reactiveValues()
   session$userData$screen_width = reactiveVal(1920)
   session$userData$screen_height = reactiveVal(1080)
+  session$userData$plot_height = reactiveVal(0)
+  session$userData$plot_height_ratios = reactiveValues()
+  session$userData$plot_width = reactiveVal(0)
   
   # Build list of server functions to grab plot specific configs
   # Access using `{type}_config`

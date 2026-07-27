@@ -22,7 +22,7 @@ plot_genes <- function(chr, start, end, elements, session){
     (gStart >= start & gEnd <= end))
   )
   if(nrow(included_genes) == 0){
-    session$userData$plot_heights[["genes-gene_track"]] = 0
+    session$userData$plot_height_ratios[["genes-gene_track"]] = 0
     return(NULL)
   }
   if(nrow(included_genes) > 1000){
@@ -57,10 +57,10 @@ plot_genes <- function(chr, start, end, elements, session){
   nBiotypesAspectRatio = 0.0175*length(unique(included_genes$gene_biotype))
   yOffsetAspectRatio = 0.025+(0.02*max_y)
   if(yOffsetAspectRatio > nBiotypesAspectRatio){
-    session$userData$plot_heights[["genes-gene_track"]] = yOffsetAspectRatio
+    session$userData$plot_height_ratios[["genes-gene_track"]] = yOffsetAspectRatio
   }
   else{
-    session$userData$plot_heights[["genes-gene_track"]] = nBiotypesAspectRatio
+    session$userData$plot_height_ratios[["genes-gene_track"]] = nBiotypesAspectRatio
   }
   rm(included_genes)
   rm(genes)

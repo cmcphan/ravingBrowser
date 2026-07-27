@@ -56,19 +56,10 @@ prev_configs, toolbar_config){
 
     plot_height = reactive({
       height = 0
-      for(name in names(session$userData$plot_heights)){
-        height = height + session$userData$plot_heights[[name]]
+      for(name in names(session$userData$plot_height_ratios)){
+        height = height + session$userData$plot_height_ratios[[name]]
       }
-      # I don't know why this is necessary but adding multiple of the ChIP/ATAC
-      #  tracks makes the plot draw compress the x axes if this extra height isn't
-      #  applied beyond the first track. This is a band-aid fix but it works well
-      #  enough.
-      active = reactiveValuesToList(session$userData$plot_heights) != 0
-      mult = sum(unlist(lapply(names(session$userData$plot_heights)[active], 
-        startsWith, prefix=c("chip", "atac"))))
-      if(mult > 1){
-        height = height + (0.025*mult)
-      }
+      height = height*session$clientData$"output_plot_panel_width" #+ (session$userData$plot_height()/3)
       return(height)
     })
 
@@ -112,6 +103,7 @@ prev_configs, toolbar_config){
       }
       if(length(plotlist_clean) == 0){
         session$userData$patchwork_plot(NULL)
+        session$userData$plot_height(0)
       }
       else if(length(plotlist_clean) == 1){
         session$userData$patchwork_plot(plotlist_clean[[1]])
@@ -120,9 +112,9 @@ prev_configs, toolbar_config){
         plot = patchwork::wrap_plots(
           plotlist_clean,
           ncol = 1
-        )
+        ) & ggplot2::theme(legend.justification="left")
         session$userData$patchwork_plot(plot)
-      }
+      } 
       rm(plotlist)
       rm(plotlist_clean)
     }, priority = -1)
@@ -133,10 +125,13 @@ prev_configs, toolbar_config){
         plot_info = patchwork::patchworkGrob(plot)
         # Calculate pixel widths of plot elements
         w_px = grid::convertWidth(plot_info$width, "native", TRUE)
+        session$userData$plot_height(abs(sum(grid::convertHeight(plot_info$height, "native", TRUE))))
+        print(reactiveValuesToList(session$userData$plot_height_ratios))
         # Total pixel widths before and after the actual plot panel
         post_panel = sum(w_px[which(as.character(plot_info$width) == "1null"):
           length(plot_info$width)])
         pre_panel = sum(w_px)-post_panel
+        session$userData$plot_width(session$clientData$"output_plot_panel_width"-post_panel-pre_panel)
         # These need to be passed through to the brush javascript onclick function
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
         region = session$userData$activeRegion()
@@ -145,9 +140,11 @@ prev_configs, toolbar_config){
       else if("ggplot" %in% attr(plot, "class")){
         plot_info = ggplot2::ggplotGrob(plot)
         w_px = grid::convertWidth(plot_info$width, "native", TRUE)
+        session$userData$plot_height(abs(sum(grid::convertHeight(plot_info$height, "native", TRUE))))
         post_panel = sum(w_px[which(as.character(plot_info$width) == "1null"):
           length(plot_info$width)])
         pre_panel = sum(w_px)-post_panel
+        session$userData$plot_width(session$clientData$"output_plot_panel_width"-post_panel-pre_panel)
         session$sendCustomMessage("panel_widths", c(pre_panel, post_panel))
         region = session$userData$activeRegion()
         session$sendCustomMessage("plot_coords", c(region$start, region$end))
@@ -157,11 +154,11 @@ prev_configs, toolbar_config){
       res = isolate(session$clientData$pixelratio*96),
       height = function(){
         height = plot_height()
-        if(height <= 0.5){
-          return(session$clientData$"output_plot_panel_width"*0.5)
+        if(height == 0){
+          return(session$userData$screen_height()*0.25)
         }
         else{
-          return(session$clientData$"output_plot_panel_width" * height)
+          return(height)
         }
       }
     )

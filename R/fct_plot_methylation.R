@@ -18,7 +18,7 @@ plot_methylation <- function(c, s, e, statuses, session){
   h_ratio = session$userData$screen_height()/965
   data = subset(methylation$obs, status %in% statuses & chr == c & start >= s & start <= e)
   if(nrow(data) == 0){
-    session$userData$plot_heights[["methylation"]] = 0
+    session$userData$plot_height_ratios[["methylation"]] = 0
     return(NULL)
   }
   visible_width = max(ceiling((e-s)/session$clientData$"output_plot_panel_width"), 1)
@@ -36,7 +36,7 @@ plot_methylation <- function(c, s, e, statuses, session){
       text=ggplot2::element_text(size=4.5*min(w_ratio, h_ratio)),
       legend.key.size=grid::unit(10*min(w_ratio, h_ratio), "points")
     )
-  session$userData$plot_heights[["methylation"]] = 0.05
+  session$userData$plot_height_ratios[["methylation"]] = 0.05
   rm(data)
   return(plot)
 }

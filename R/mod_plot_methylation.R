@@ -59,7 +59,7 @@ mod_plot_methylation_server <- function(id, basic_config, plot_config, current_p
       if(length(config$statuses) == 0){
         prev_configs[["methylation"]] = config
         current_plots[[paste0("methylation")]] = NULL
-        session$userData$plot_heights[["methylation"]] = 0
+        session$userData$plot_height_ratios[["methylation"]] = 0
         return()
       }
       
@@ -78,7 +78,7 @@ mod_plot_methylation_server <- function(id, basic_config, plot_config, current_p
       }
       if(!("methylation" %in% isolate(basic_config$plot_type_select()))){
         current_plots[["methylation"]] = NULL
-        session$userData$plot_heights[["methylation"]] = 0
+        session$userData$plot_height_ratios[["methylation"]] = 0
         prev_configs[["methylation"]]$selected = FALSE
         return()
       }

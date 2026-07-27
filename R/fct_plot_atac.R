@@ -71,7 +71,7 @@ plot_atac <- function(c, s, e, resolution, peaksets, session) {
         legend.title.position="top",
         legend.text.position="bottom"
       )
-    session$userData$plot_heights[[paste0("atac-",p)]] = 0.05
+    session$userData$plot_height_ratios[[paste0("atac-",p)]] = 0.09
     return(plot)
   }, USE.NAMES=TRUE)
   rm(bw)

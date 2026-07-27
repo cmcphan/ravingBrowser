@@ -62,7 +62,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
         prev_configs[["chip"]] = config
         for(m in browser_data$chip_marks){
           current_plots[[paste0("chip-",m)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",m)]] = 0
+          session$userData$plot_height_ratios[[paste0("chip-",m)]] = 0
         }
         return()
       }
@@ -71,7 +71,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       for(m in browser_data$chip_marks){
         if(!(m %in% config$marks)){
           current_plots[[paste0("chip-",m)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",m)]] = 0
+          session$userData$plot_height_ratios[[paste0("chip-",m)]] = 0
         }
       }
       
@@ -93,7 +93,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
         for(m in browser_data$chip_marks){
           current_plots[[paste0("chip-",m)]] = NULL
-          session$userData$plot_heights[[paste0("chip-",m)]] = 0
+          session$userData$plot_height_ratios[[paste0("chip-",m)]] = 0
         }
         prev_configs[["chip"]]$selected = FALSE
         return()

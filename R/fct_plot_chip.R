@@ -80,7 +80,7 @@ plot_chip <- function(c, s, e, resolution, marks, session) {
         legend.title.position="top",
         legend.text.position="bottom"
       )
-    session$userData$plot_heights[[paste0("chip-",m)]] = 0.05
+    session$userData$plot_height_ratios[[paste0("chip-",m)]] = 0.09
     return(plot)
   }, USE.NAMES=TRUE)
   rm(bw)

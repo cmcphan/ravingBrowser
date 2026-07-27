@@ -68,7 +68,7 @@ mod_plot_genes_server <- function(id, basic_config, plot_config, current_plots,
       }
       if(!("genes" %in% isolate(basic_config$plot_type_select()))){
         current_plots[["genes-gene_track"]] = NULL
-        session$userData$plot_heights[["genes-gene_track"]] = 0
+        session$userData$plot_height_ratios[["genes-gene_track"]] = 0
         prev_configs[["genes"]]$selected = FALSE
         return()
       }
