@@ -126,7 +126,6 @@ prev_configs, toolbar_config){
         # Calculate pixel widths of plot elements
         w_px = grid::convertWidth(plot_info$width, "native", TRUE)
         session$userData$plot_height(abs(sum(grid::convertHeight(plot_info$height, "native", TRUE))))
-        print(reactiveValuesToList(session$userData$plot_height_ratios))
         # Total pixel widths before and after the actual plot panel
         post_panel = sum(w_px[which(as.character(plot_info$width) == "1null"):
           length(plot_info$width)])

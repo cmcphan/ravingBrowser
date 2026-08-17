@@ -150,9 +150,7 @@ BrowserData <- R6::R6Class(
         self$chip_signal[,"mark"] = unlist(lapply(self$chip_signal$bw_sample_names, 
           function(x){strsplit(x, "_")[[1]][2]}))
         self$plot_types[["chip"]] = "ChIP-seq"
-        marks = unique(self$chip_signal$mark)
-        marks = marks[-which(marks == "INPUT")]
-        self$chip_marks = marks
+        self$chip_marks = unique(self$chip_signal$mark)
 			}
       if(!is.null(chip_peaks_paths)){
         self$chip_peaks = list()

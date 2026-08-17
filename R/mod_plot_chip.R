@@ -47,7 +47,7 @@ mod_plot_chip_server <- function(id, basic_config, plot_config, current_plots,
       config$start = as.numeric(region$start)
       config$end = as.numeric(region$end)
       width = config$end - config$start
-      config$resolution = as.integer(width / plot_config$resolution())
+      config$resolution = max(as.integer(width / plot_config$resolution()), 1)
       config$marks = plot_config$elements()
       config$screen_dimensions = c(session$userData$screen_width(), session$userData$screen_height())
       if(!("chip" %in% isolate(basic_config$plot_type_select()))){
